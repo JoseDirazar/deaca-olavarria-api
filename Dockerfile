@@ -1,21 +1,26 @@
-# Usa la imagen base de Node.js
-FROM node:18
+# Usa la imagen base de Node.js 22
+FROM node:22
 
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
 
-# Copia el archivo package.json y package-lock.json
-COPY package*.json ./
+# Instala pnpm manualmente
+RUN npm install -g pnpm
 
-# Instala las dependencias
-RUN npm install -g @nestjs/cli
-RUN npm install
+# Copia los archivos de dependencias
+COPY package.json pnpm-lock.yaml ./
+
+# Instala las dependencias con pnpm
+RUN pnpm install --frozen-lockfile
 
 # Copia el resto del código del proyecto
 COPY . .
 
-# Expone el puerto que usará la aplicación
-EXPOSE 4001
+# Construye la aplicación
+RUN pnpm run build
 
-# Comando para iniciar la aplicación
-CMD ["npm", "run", "start:proddocker"]
+# Expone el puerto de la aplicación
+EXPOSE 4002
+
+# Comando para correr las migraciones y iniciar la aplicación
+CMD ["pnpm", "start:prod"]
