@@ -1,4 +1,4 @@
-import { User, UserRoleType } from '@models/User.entity';
+import { User } from '@models/User.entity';
 import { Repository } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+import { Roles } from 'src/infrastructure/types/enums/roles';
 
 @Injectable()
 export class UserService {
@@ -28,8 +29,8 @@ export class UserService {
     const user = new User();
     user.email = email;
     user.password = hashedPassword;
-    user.role = UserRoleType.USER;
-    user.email_code = emailVerificationCode;
+    user.role = Roles.USER;
+    user.emailCode = emailVerificationCode;
     //user.email_code_create_at = Date.now()
     const savedUser = await this.userRepository.save(user);
     return savedUser;
@@ -43,12 +44,12 @@ export class UserService {
     const user = new User();
     user.email = email;
     user.password = hashedPassword;
-    user.role = UserRoleType.ADMIN;
+    user.role = Roles.ADMIN;
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
 
-  async findById(userId: number): Promise<User> {
+  async findById(userId: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -72,18 +73,18 @@ export class UserService {
   }
 
   async updateLastLogin(user: User): Promise<User> {
-    user.last_login = new Date();
+    user.lastLogin = new Date();
     return this.userRepository.save(user);
   }
 
-  async editProfile(userId: number, editProfileDto: EditProfileDto): Promise<User> {
+  async editProfile(userId: string, editProfileDto: EditProfileDto): Promise<User> {
     const user = await this.findById(userId);
-    user.first_name = editProfileDto.first_name;
-    user.last_name = editProfileDto.last_name;
+    user.firstName = editProfileDto.firstName;
+    user.lastName = editProfileDto.lastName;
     return this.userRepository.save(user);
   }
 
-  async changeAvatar(userId: number, avatar: string): Promise<User> {
+  async changeAvatar(userId: string, avatar: string): Promise<User> {
     const user = await this.findById(userId);
     user.avatar = avatar;
     return this.userRepository.save(user);

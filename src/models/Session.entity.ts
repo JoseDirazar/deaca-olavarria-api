@@ -1,9 +1,9 @@
 import { JoinColumn, ManyToOne } from 'typeorm';
 import { Column, Entity } from 'typeorm';
-import { BaseEntity } from './Base.entity';
+import { BaseEntity } from '../infrastructure/models/Base.entity';
 import { User } from './User.entity';
 
-@Entity({ name: 'session' })
+@Entity()
 export class Session extends BaseEntity {
   @Column()
   expiredAt: Date;

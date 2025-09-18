@@ -83,7 +83,7 @@ export class AuthService {
 
   async logInWithGoogle(req, logInWithGoogleDto: LogInWithGoogleDto) {
     // Conectarse a la API de Google con el token
-    const googleUser = await this.getUserWithGoogleTokens(logInWithGoogleDto.token);
+    const googleUser = await this.getUserWithGoogleTokens(logInWithGoogleDto.accessToken);
 
     const user = await this.userService.userExistByEmail(googleUser.email);
 
@@ -130,7 +130,7 @@ export class AuthService {
   }
 
   async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<string> {
-    const refreshTokenData = await this.validateAccessRefreshToken(refreshTokenDto.refresh_token);
+    const refreshTokenData = await this.validateAccessRefreshToken(refreshTokenDto.refreshToken);
 
     if (!refreshTokenData) {
       throw new UnauthorizedException({

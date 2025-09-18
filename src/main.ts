@@ -1,7 +1,6 @@
 import './config/dd-tracer';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { urlencoded, json } from 'express';
 import * as pg from 'pg';

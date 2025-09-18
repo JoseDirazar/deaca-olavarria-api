@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiTags, ApiOperation } from '@nestjs/swagger';
+
 import { LogInDto } from './dto/log-in.dto';
 import { AuthService } from './auth.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -12,13 +12,10 @@ import { GetSessionId } from 'src/infrastructure/decorators/get-session-id.decor
 import { SignUpDto } from './dto/sign-up.dto';
 
 @Controller('auth')
-@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @ApiBody({ type: SignUpDto })
-  @ApiOperation({ summary: 'Crea el user con email y password' })
   @Post('sign-up')
   async createUser(@Req() req: Request, @Body() dto: SignUpDto) {
     const serviceResponse = await this.authService.signUp(req, dto);
@@ -27,8 +24,6 @@ export class AuthController {
   }
 
   @Public()
-  @ApiBody({ type: LogInDto })
-  @ApiOperation({ summary: 'Crea la session del usuario' })
   @Post('/log-in')
   async logIn(
     @Body() logInDto: LogInDto,
@@ -40,8 +35,6 @@ export class AuthController {
   }
 
   @Public()
-  @ApiBody({ type: LogInWithGoogleDto })
-  @ApiOperation({ summary: 'Crea la session del usuario' })
   @Post('/log-in-with-google')
   async logInWithGoogle(
     @Body() logInWithGoogleDto: LogInWithGoogleDto,
@@ -53,8 +46,6 @@ export class AuthController {
   }
 
   @Public()
-  @ApiBody({ type: RefreshTokenDto })
-  @ApiOperation({ summary: 'Crea la session del usuario' })
   @Post('/refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     const token = await this.authService.refreshToken(refreshTokenDto);
@@ -62,7 +53,6 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Obtiene tu datos de usuario' })
   @Post('/log-out')
   getProfile(@GetUser() user: User, @GetSessionId() sessionId: number) {
     return { ok: true, user, sessionId };

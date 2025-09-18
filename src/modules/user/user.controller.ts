@@ -2,7 +2,7 @@ import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, H
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+
 import { User } from '@models/User.entity';
 import * as uuid from 'uuid';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
@@ -11,31 +11,25 @@ import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
 
 @Controller('user')
-@ApiTags('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Obtiene tu datos de usuario' })
   @Get('')
   getProfile(@GetUser() user: User) {
     return { ok: true, user };
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiBody({ type: EditProfileDto })
-  @ApiOperation({ summary: 'Edita tu datos de usuario (name, lastaName)' })
   @Put('')
   async editProfile(@GetUser() user: User, @Body() editProfileDto: EditProfileDto) {
-    const userId = parseInt(`${user.id}`, 10);
-    const usersaved = await this.userService.editProfile(userId, editProfileDto);
+    const usersaved = await this.userService.editProfile(user.id, editProfileDto);
 
     return { ok: true, user: usersaved };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('avatar')
-  @ApiOperation({ summary: 'Edita tu avatar de usuario' })
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter(req, file, callback) {
@@ -61,10 +55,8 @@ export class UserController {
     @GetUser() user: User,
   ) {
     if (!file) throw new HttpException('a file is required', HttpStatus.BAD_REQUEST);
-
-    const userId = parseInt(`${user.id}`, 10);
     const avatar = file.filename;
-    const usersaved = await this.userService.changeAvatar(userId, avatar);
+    const usersaved = await this.userService.changeAvatar(user.id, avatar);
 
     return { ok: true, user: usersaved };
   }

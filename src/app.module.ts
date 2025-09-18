@@ -12,8 +12,7 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
-
-const   serveStaticOptions = {
+const serveStaticOptions = {
   extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
 };
 
@@ -21,7 +20,7 @@ const   serveStaticOptions = {
   imports: [
     ConfigModule.forRoot(ConfigModuleOptions),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'uploads','users', 'avatars'),
+      rootPath: join(__dirname, '..', '..', 'uploads', 'users', 'avatars'),
       serveRoot: '/users/avatar',
       serveStaticOptions,
     }),
@@ -46,8 +45,8 @@ const   serveStaticOptions = {
         password: configService.get<string>('database.pass'),
         database: configService.get<string>('database.name'),
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-        synchronize: true,
-        force: true,
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        dropSchema: configService.get<string>('NODE_ENV') !== 'production',
         namingStrategy: new SnakeNamingStrategy(),
       }),
     }),

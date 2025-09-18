@@ -1,15 +1,10 @@
 import { Index, OneToMany } from 'typeorm';
 import { Column, Entity } from 'typeorm';
-import { BaseEntity } from './Base.entity';
+import { BaseEntity } from '../infrastructure/models/Base.entity';
 import { Session } from './Session.entity';
+import { Roles } from 'src/infrastructure/types/enums/roles';
 
-export enum UserRoleType {
-  ADMIN = 'admin',
-  INTERNAL = 'internal',
-  USER = 'user',
-}
-
-@Entity({ name: 'user' })
+@Entity()
 export class User extends BaseEntity {
   @Index({ unique: true })
   @Column({ type: 'varchar', length: 255, nullable: false })
@@ -25,22 +20,22 @@ export class User extends BaseEntity {
   avatar: string;
 
   @Column({ type: 'varchar', length: 255, default: '' })
-  email_code: string;
+  emailCode: string;
 
   @Column({ type: 'varchar', length: 255, default: '', nullable: true })
-  first_name: string;
+  firstName: string;
 
   @Column({ type: 'varchar', length: 255, default: '', nullable: true })
-  last_name: string;
+  lastName: string;
 
   @Column({ nullable: true })
-  email_code_create_at: Date;
+  emailCodeCreateAt: Date;
 
-  @Column({ type: 'enum', enum: UserRoleType, default: UserRoleType.USER })
-  role: UserRoleType;
+  @Column({ type: 'enum', enum: Roles, default: Roles.USER })
+  role: Roles;
 
   @Column({ type: 'timestamp', nullable: true })
-  last_login?: Date;
+  lastLogin?: Date;
 
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
