@@ -9,8 +9,8 @@ export class DataService {
   async loadDataByDefault(): Promise<void> {
     const defaultUsers = [
       {
-        email: 'joseleonardoagreda@gmail.com',
-        password: '123456',
+        email: 'jfdirazar@gmail.com',
+        password: 'Qwer@1234',
       },
     ];
 

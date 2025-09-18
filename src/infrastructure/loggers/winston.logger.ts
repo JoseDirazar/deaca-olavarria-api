@@ -3,7 +3,7 @@ import { format, transports } from 'winston';
 import { Syslog } from 'winston-syslog';
 
 const syslogTransport = new Syslog({
-  app_name: 'workitfy-backend',
+  app_name: 'deaca-api',
   localhost: process.env.NODE_ENV,
   eol: '\n',
   format: format.json(),
