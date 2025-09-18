@@ -1,0 +1,42 @@
+version: '3.7'
+name: tugcation-production
+services:
+  tugcation-postgres:
+    container_name: tugcation-postgres
+    image: postgres:13.4
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgresdb:/var/lib/postgresql/data
+      - ./db-entrypoint/:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_USER: tugcation903
+      POSTGRES_PASSWORD: 9c3a9c6s19w2e82e8efb
+      POSTGRES_DB: tugcation_db
+      PGADMIN_DEFAULT_EMAIL: admin@deploydev.app
+      PGADMIN_DEFAULT_PASSWORD: admin
+    command:
+      - 'postgres'
+      - '-c'
+      - 'wal_level=logical'
+    networks:
+      - tugcation_network
+
+  tugcation-backend:
+    container_name: tugcation-backend
+    build:
+      dockerfile: Dockerfile
+      context: .
+    depends_on:
+      - tugcation-postgres
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '4001:4001'
+    networks:
+      - tugcation_network
+
+networks:
+  tugcation_network:

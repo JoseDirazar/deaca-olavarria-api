@@ -1,0 +1,141 @@
+import { User, UserRoleType } from '@models/User.entity';
+import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
+import { EditProfileDto } from './dto/edit-profile.dto';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class UserService {
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  async createUser(email: string, password: string): Promise<User> {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const randomNumber = Math.floor(Math.random() * 100000);
+    const emailVerificationCode = randomNumber.toString().padStart(5, '0');
+
+    await this.sendEmail(email, emailVerificationCode);
+
+    const user = new User();
+    user.email = email;
+    user.password = hashedPassword;
+    user.role = UserRoleType.USER;
+    user.email_code = emailVerificationCode;
+    //user.email_code_create_at = Date.now()
+    const savedUser = await this.userRepository.save(user);
+    return savedUser;
+  }
+
+  // Used in loadDataByDefault
+  async createUserAdmin(email: string, password: string): Promise<User> {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = new User();
+    user.email = email;
+    user.password = hashedPassword;
+    user.role = UserRoleType.ADMIN;
+    const savedUser = await this.userRepository.save(user);
+    return savedUser;
+  }
+
+  async findById(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async userExistByEmail(email: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({ where: { email: email } });
+    return user;
+  }
+
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    const user = await this.userRepository.createQueryBuilder('user').select('user.password').where('user.email = :email', { email }).getRawOne();
+
+    if (user) return user.user_password;
+
+    return null;
+  }
+
+  async updateLastLogin(user: User): Promise<User> {
+    user.last_login = new Date();
+    return this.userRepository.save(user);
+  }
+
+  async editProfile(userId: number, editProfileDto: EditProfileDto): Promise<User> {
+    const user = await this.findById(userId);
+    user.first_name = editProfileDto.first_name;
+    user.last_name = editProfileDto.last_name;
+    return this.userRepository.save(user);
+  }
+
+  async changeAvatar(userId: number, avatar: string): Promise<User> {
+    const user = await this.findById(userId);
+    user.avatar = avatar;
+    return this.userRepository.save(user);
+  }
+
+  async createWithGoogle(email: string): Promise<User> {
+    const password = this.generateRandomPassword();
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = new User();
+    user.email = email;
+    user.password = hashedPassword;
+    user.email_verified = true;
+
+    const savedUser = await this.userRepository.save(user);
+
+    return savedUser;
+  }
+
+  generateRandomPassword(): string {
+    const caracteres = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.';
+    let password = '';
+
+    for (let i = 0; i < 14; i++) {
+      const indice = Math.floor(Math.random() * caracteres.length);
+      password += caracteres.charAt(indice);
+    }
+
+    password += '@.';
+
+    password = password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
+
+    return password;
+  }
+
+  async sendEmail(email: string, code: string) {
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        from: this.configService.get<string>('nodemailer.from'),
+        subject: 'Padelink: Verifica tu correo electronico',
+        template: 'index',
+        context: {
+          code,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
