@@ -20,7 +20,7 @@ COPY . .
 RUN pnpm run build
 
 # Expone el puerto de la aplicación
-EXPOSE 4002
+EXPOSE 4003
 
 # Comando para correr las migraciones y iniciar la aplicación
 CMD ["pnpm", "start:prod"]
