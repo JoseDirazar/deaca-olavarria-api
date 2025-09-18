@@ -10,13 +10,30 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from '@modules/user/user.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+
+
+const   serveStaticOptions = {
+  extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
+};
 
 @Module({
   imports: [
     ConfigModule.forRoot(ConfigModuleOptions),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'uploads', 'avatar'),
-      serveRoot: '/avatar',
+      rootPath: join(__dirname, '..', '..', 'uploads','users', 'avatars'),
+      serveRoot: '/users/avatar',
+      serveStaticOptions,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'uploads', 'users', 'establishments'),
+      serveRoot: '/users/establishments',
+      serveStaticOptions,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'uploads', 'assets'),
+      serveRoot: '/assets',
+      serveStaticOptions,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -31,6 +48,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: true,
         force: true,
+        namingStrategy: new SnakeNamingStrategy(),
       }),
     }),
     UserModule,

@@ -32,17 +32,13 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
     credentials: true,
-    origin: [/http\:\/\/localhost\:\d{1,5}$/, /https\:\/\/front1\.maylandlabs\.com$/, /https\:\/\/front2\.maylandlabs\.com$/],
+    origin: [/http\:\/\/localhost\:\d{1,5}$/, /https\:\/\/deaca\.forgebyteslab\.com$/, /https\:\/\/deaca\.com$/],
   });
   app.setGlobalPrefix('api');
-
-  const config = new DocumentBuilder().setTitle('Workitfy API').setDescription('Workitfy API docuemntation').addBearerAuth().setVersion('1.0').build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('doc', app, document);
 
   const loadData = app.get(DataService);
   await loadData.loadDataByDefault();
 
-  await app.listen(4001);
+  await app.listen(process.env.PORT ?? 4003);
 }
 bootstrap();
