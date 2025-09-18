@@ -5,9 +5,9 @@ import { UserService } from './user.service';
 
 import { User } from '@models/User.entity';
 import * as uuid from 'uuid';
-import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
 
 @Controller('user')

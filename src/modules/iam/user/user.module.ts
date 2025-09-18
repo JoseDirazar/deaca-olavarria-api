@@ -1,19 +1,21 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../../models/User.entity';
+import { User } from '../../../models/User.entity';
 import { UserService } from './user.service';
 import { AuthModule } from '../auth/auth.module';
 import { AuthService } from '../auth/auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { SessionService } from '@modules/auth/session.service';
 import { Session } from '@models/Session.entity';
 import { UserController } from './user.controller';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { SessionService } from '../auth/session.service';
+import { EmailModule } from '@modules/email/email.module';
+import { EmailService } from '@modules/email/email.service';
 
 @Module({
-  providers: [UserService, AuthService, JwtService, SessionService],
+  providers: [UserService, AuthService, JwtService, SessionService, EmailService],
   controllers: [UserController],
   imports: [
     TypeOrmModule.forFeature([User, Session]),
@@ -51,6 +53,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
       }),
     }),
     forwardRef(() => AuthModule),
+    EmailModule,
   ],
   exports: [UserService],
 })

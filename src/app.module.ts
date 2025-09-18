@@ -3,14 +3,12 @@ import { AppController } from './app.controller';
 import { join } from 'path';
 import { AppService } from './app.service';
 import { DataService } from './scripts/DataService';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModuleOptions } from './config/options';
-import { ConfigModule } from '@nestjs/config';
-import { UserModule } from '@modules/user/user.module';
-import { AuthModule } from '@modules/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { IamModule } from '@modules/iam/iam.module';
 
 const serveStaticOptions = {
   extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
@@ -50,8 +48,7 @@ const serveStaticOptions = {
         namingStrategy: new SnakeNamingStrategy(),
       }),
     }),
-    UserModule,
-    AuthModule,
+    IamModule,
   ],
   controllers: [AppController],
   providers: [AppService, DataService],

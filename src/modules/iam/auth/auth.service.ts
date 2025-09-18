@@ -3,29 +3,15 @@ import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import axios from 'axios';
-import { User } from '../../models/User.entity';
 import { Logger } from '@nestjs/common';
 import { LogInDto } from './dto/log-in.dto';
-import { Session } from '@models/Session.entity';
 import { SessionService } from './session.service';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LogInWithGoogleDto } from './dto/log-in-with-google.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-
-export class validatedSession {
-  user: User;
-  sessionId: number;
-}
-
-export class GoogleUser {
-  email: string;
-}
-
-class AccessRefreshTokenGenerated {
-  session: Session;
-  refreshToken: string;
-}
+import { AccessRefreshTokenGenerated, GoogleUser, validatedSession } from 'src/infrastructure/types/interfaces/session.interface';
+import { User } from '@models/User.entity';
 
 @Injectable()
 export class AuthService {
@@ -38,19 +24,19 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signUp(req, { email, password }: SignUpDto) {
-    const userExist = await this.userService.userExistByEmail(email);
+  async signUp(req, signupDto: SignUpDto) {
+    const userExist = await this.userService.userExistByEmail(signupDto.email);
     if (userExist) throw new NotFoundException('El usuario ya existe');
 
-    const user = await this.userService.createUser(email, password);
+    const user = await this.userService.createUser(signupDto);
 
     const { refreshToken, session } = await this.generateAccessRefreshToken(req, user);
 
-    const token = await this.generateAccessToken(user.id, session.id);
+    const accessToken = await this.generateAccessToken(user.id, session.id);
 
     return {
       ok: true,
-      token,
+      accessToken,
       refreshToken,
     };
   }

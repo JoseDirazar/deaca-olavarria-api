@@ -4,30 +4,28 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { EditProfileDto } from './dto/edit-profile.dto';
-import { MailerService } from '@nestjs-modules/mailer';
-import { ConfigService } from '@nestjs/config';
 import { Roles } from 'src/infrastructure/types/enums/roles';
+import { EmailService } from '@modules/email/email.service';
+import { SignUpDto } from '../auth/dto/sign-up.dto';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly mailerService: MailerService,
-    private readonly configService: ConfigService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly emailService: EmailService,
   ) {}
 
-  async createUser(email: string, password: string): Promise<User> {
+  async createUser(dto: SignUpDto): Promise<User> {
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(dto.password, salt);
 
     const randomNumber = Math.floor(Math.random() * 100000);
     const emailVerificationCode = randomNumber.toString().padStart(5, '0');
 
-    await this.sendEmail(email, emailVerificationCode);
-
+    const response = await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
     const user = new User();
-    user.email = email;
+    user.email = dto.email;
     user.password = hashedPassword;
     user.role = Roles.USER;
     user.emailCode = emailVerificationCode;
@@ -60,7 +58,7 @@ export class UserService {
   }
 
   async userExistByEmail(email: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { email: email } });
+    const user = await this.userRepository.findOne({ where: { email } });
     return user;
   }
 
@@ -122,21 +120,5 @@ export class UserService {
       .join('');
 
     return password;
-  }
-
-  async sendEmail(email: string, code: string) {
-    try {
-      await this.mailerService.sendMail({
-        to: email,
-        from: this.configService.get<string>('nodemailer.from'),
-        subject: 'Padelink: Verifica tu correo electronico',
-        template: 'index',
-        context: {
-          code,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
   }
 }

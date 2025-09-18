@@ -5,10 +5,11 @@ import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { User } from '../../models/User.entity';
 import { Session } from '@models/Session.entity';
 import { SessionService } from './session.service';
-import { UserService } from '@modules/user/user.service';
+import { UserService } from '@modules/iam/user/user.service';
+import { User } from '@models/User.entity';
+import { EmailService } from '@modules/email/email.service';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { UserService } from '@modules/user/user.service';
     }),
     TypeOrmModule.forFeature([User, Session]),
   ],
-  providers: [UserService, AuthService, SessionService],
+  providers: [UserService, AuthService, SessionService, EmailService],
   controllers: [AuthController],
   exports: [AuthModule],
 })
