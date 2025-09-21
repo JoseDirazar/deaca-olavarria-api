@@ -25,16 +25,17 @@ export class UserService {
 
     const response = await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
     const user = new User();
+    console.log('SEND EMAIL LOG: ', response);
     user.email = dto.email;
     user.password = hashedPassword;
     user.role = Roles.USER;
     user.emailCode = emailVerificationCode;
-    //user.email_code_create_at = Date.now()
+    user.emailCodeCreateAt = new Date();
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
 
-  // Used in loadDataByDefault
+  // Used in loadDataByDefault ONLY
   async createUserAdmin(email: string, password: string): Promise<User> {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);

@@ -9,6 +9,8 @@ import { ConfigModuleOptions } from './config/options';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { IamModule } from '@modules/iam/iam.module';
+import { CategoryModule } from './modules/category/category.module';
+import { EstablishmentModule } from './modules/establishment/establishment.module';
 
 const serveStaticOptions = {
   extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
@@ -49,6 +51,8 @@ const serveStaticOptions = {
       }),
     }),
     IamModule,
+    CategoryModule,
+    EstablishmentModule,
   ],
   controllers: [AppController],
   providers: [AppService, DataService],

@@ -53,7 +53,6 @@ import { EmailService } from '@modules/email/email.service';
       }),
     }),
     forwardRef(() => AuthModule),
-    EmailModule,
   ],
   exports: [UserService],
 })
