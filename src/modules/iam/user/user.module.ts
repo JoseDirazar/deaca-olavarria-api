@@ -8,8 +8,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Session } from '@models/Session.entity';
 import { UserController } from './user.controller';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+
 import { SessionService } from '../auth/session.service';
 import { EmailModule } from '@modules/email/email.module';
 import { EmailService } from '@modules/email/email.service';
@@ -25,30 +24,6 @@ import { EmailService } from '@modules/email/email.service';
         secret: config.get<string>('access_token.secret'),
         signOptions: {
           expiresIn: config.get<string>('access_token.expiresIn'),
-        },
-      }),
-    }),
-    MailerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        transport: {
-          host: configService.get<string>('nodemailer.host'),
-          port: configService.get<number>('nodemailer.port'),
-          secure: true,
-          auth: {
-            user: configService.get<string>('nodemailer.username'),
-            pass: configService.get<string>('nodemailer.password'),
-          },
-        },
-        defaults: {
-          from: configService.get<string>('nodemailer.from'),
-        },
-        template: {
-          dir: process.cwd() + '/template/',
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
-          },
         },
       }),
     }),

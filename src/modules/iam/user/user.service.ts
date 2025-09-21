@@ -4,9 +4,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { EditProfileDto } from './dto/edit-profile.dto';
-import { Roles } from 'src/infrastructure/types/enums/roles';
 import { EmailService } from '@modules/email/email.service';
 import { SignUpDto } from '../auth/dto/sign-up.dto';
+import { Roles } from 'src/infrastructure/types/enums/Roles';
 
 @Injectable()
 export class UserService {
@@ -97,7 +97,7 @@ export class UserService {
     const user = new User();
     user.email = email;
     user.password = hashedPassword;
-    user.email_verified = true;
+    user.emailVerified = true;
 
     const savedUser = await this.userRepository.save(user);
 

@@ -2,7 +2,7 @@ import { Index, OneToMany } from 'typeorm';
 import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../infrastructure/models/Base.entity';
 import { Session } from './Session.entity';
-import { Roles } from 'src/infrastructure/types/enums/roles';
+import { Roles } from 'src/infrastructure/types/enums/Roles';
 
 @Entity()
 export class User extends BaseEntity {
@@ -11,7 +11,7 @@ export class User extends BaseEntity {
   email: string;
 
   @Column({ type: 'boolean', default: false })
-  email_verified: boolean;
+  emailVerified: boolean;
 
   @Column({ type: 'varchar', length: 128, nullable: false, select: false })
   password: string;
@@ -28,7 +28,7 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, default: '', nullable: true })
   lastName: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp' })
   emailCodeCreateAt: Date;
 
   @Column({ type: 'enum', enum: Roles, default: Roles.USER })
