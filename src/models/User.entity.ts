@@ -3,6 +3,8 @@ import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../infrastructure/models/Base.entity';
 import { Session } from './Session.entity';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
+import { Review } from './Review.entity';
+import { Establishment } from './Establishment.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -19,7 +21,7 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   avatar: string;
 
-  @Column({ type: 'varchar', length: 255, default: '' })
+  @Column({ type: 'varchar', length: 255, default: '', select: false })
   emailCode: string;
 
   @Column({ type: 'varchar', length: 255, default: '', nullable: true })
@@ -28,7 +30,7 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, default: '', nullable: true })
   lastName: string;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: 'timestamp', select: false })
   emailCodeCreateAt: Date;
 
   @Column({ type: 'enum', enum: Roles, default: Roles.USER })
@@ -39,4 +41,10 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
+
+  @OneToMany(() => Review, (review) => review.reviewer)
+  reviewsGiven: Review[];
+
+  @OneToMany(() => Establishment, (establishment) => establishment.user)
+  establishments: Establishment[];
 }

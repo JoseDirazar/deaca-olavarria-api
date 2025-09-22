@@ -8,10 +8,14 @@ import { LogInDto } from './dto/log-in.dto';
 import { SessionService } from './session.service';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { LogInWithGoogleDto } from './dto/log-in-with-google.dto';
+import { SignInWithGoogleDto } from './dto/sign-in-with-google.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import { AccessRefreshTokenGenerated, GoogleUser, validatedSession } from 'src/infrastructure/types/interfaces/session.interface';
+import { AccessRefreshTokenGenerated, validatedSession } from 'src/infrastructure/types/interfaces/session.interface';
 import { User } from '@models/User.entity';
+import path from 'path';
+import * as fs from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
+import { IGoogleUser } from 'src/infrastructure/types/interfaces/auth';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +26,7 @@ export class AuthService {
     private readonly sessionService: SessionService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async signUp(req, signupDto: SignUpDto) {
     const userExist = await this.userService.userExistByEmail(signupDto.email);
@@ -67,18 +71,38 @@ export class AuthService {
     };
   }
 
-  async logInWithGoogle(req, logInWithGoogleDto: LogInWithGoogleDto) {
-    // Conectarse a la API de Google con el token
-    const googleUser = await this.getUserWithGoogleTokens(logInWithGoogleDto.accessToken);
+  async signInWithGoogle(req, signInWithGoogleDto: SignInWithGoogleDto) {
+    const googleUser: IGoogleUser = await this.getUserWithGoogleTokens(
+      signInWithGoogleDto.accessToken,
+    );
 
     const user = await this.userService.userExistByEmail(googleUser.email);
 
     if (!user) {
-      const userCreated = await this.userService.createWithGoogle(googleUser.email);
+      const userCreated = await this.userService.createWithGoogle(
+        googleUser.email,
+      );
+
+      // Set email as verified since it's Google authenticated
+      userCreated.emailVerified = true;
+
+      // Download and save the avatar
+      const avatarFileName = await this.downloadAndSaveGoogleAvatar(
+        googleUser.picture,
+      );
+
+      if (avatarFileName) userCreated.avatar = avatarFileName;
+
+      userCreated.firstName = googleUser.given_name;
+      userCreated.lastName = googleUser.family_name;
+      await this.userService.createUser(userCreated);
 
       await this.userService.updateLastLogin(userCreated);
 
-      const { refreshToken, session } = await this.generateAccessRefreshToken(req, userCreated);
+      const { refreshToken, session } = await this.generateAccessRefreshToken(
+        req,
+        userCreated,
+      );
 
       const token = await this.generateAccessToken(userCreated.id, session.id);
 
@@ -91,7 +115,10 @@ export class AuthService {
 
     await this.userService.updateLastLogin(user);
 
-    const { refreshToken, session } = await this.generateAccessRefreshToken(req, user);
+    const { refreshToken, session } = await this.generateAccessRefreshToken(
+      req,
+      user,
+    );
 
     const token = await this.generateAccessToken(user.id, session.id);
 
@@ -213,7 +240,7 @@ export class AuthService {
     }
   }
 
-  async getUserWithGoogleTokens(accessToken: string): Promise<GoogleUser> {
+  async getUserWithGoogleTokens(accessToken: string): Promise<IGoogleUser> {
     try {
       const response = await axios.get('https://www.googleapis.com/userinfo/v2/me', {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -224,4 +251,53 @@ export class AuthService {
       throw new UnauthorizedException('Invalid accessToken.');
     }
   }
+
+  private async downloadAndSaveGoogleAvatar(imageUrl: string) {
+    try {
+      // Create uploads directory if it doesn't exist
+      const uploadDir = path.join(process.cwd(), 'uploads', 'user', 'avatar');
+      await fs.mkdir(uploadDir, { recursive: true });
+
+      // Generate unique filename with uuid
+      const fileExtension = '.jpg'; // Google usually serves JPG images
+      const fileName = `${uuidv4()}${fileExtension}`;
+      const filePath = path.join(uploadDir, fileName);
+
+      // Download image
+      const response = await axios({
+        url: imageUrl,
+        method: 'GET',
+        responseType: 'arraybuffer',
+      });
+
+      // Save image to file system
+      await fs.writeFile(filePath, response.data);
+
+      return fileName;
+    } catch (error) {
+      console.error('Error saving Google avatar:', error);
+      return null;
+    }
+  }
+
+  async confirmEmail({
+    email,
+    emailCode,
+  }: {
+    email: string;
+    emailCode: string;
+  }) {
+    const user = await this.userService.userExistByEmail(email);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.emailCode !== emailCode) {
+      throw new NotFoundException('Email code not valid');
+    }
+    user.emailVerified = true;
+    user.emailCode = '';
+    return this.userService.editProfile(user.id, { emailVerified: true });
+  }
+
 }

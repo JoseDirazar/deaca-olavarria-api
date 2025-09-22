@@ -7,6 +7,8 @@ import { EditProfileDto } from './dto/edit-profile.dto';
 import { EmailService } from '@modules/email/email.service';
 import { SignUpDto } from '../auth/dto/sign-up.dto';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
+import { join } from 'path';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class UserService {
@@ -14,9 +16,10 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   async createUser(dto: SignUpDto): Promise<User> {
+
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(dto.password, salt);
 
@@ -76,16 +79,54 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
+  // Map only provided fields from EditProfileDto to the user entity
+  private applyEditProfile(user: User, dto: EditProfileDto): void {
+    const allowedKeys: (keyof EditProfileDto & keyof User)[] = [
+      'firstName',
+      'lastName',
+      'avatar',
+      'emailVerified',
+    ];
+
+    for (const key of allowedKeys) {
+      const value = dto[key as keyof EditProfileDto];
+      if (value !== undefined) {
+        (user as any)[key] = value as any;
+      }
+    }
+  }
+
   async editProfile(userId: string, editProfileDto: EditProfileDto): Promise<User> {
     const user = await this.findById(userId);
-    user.firstName = editProfileDto.firstName;
-    user.lastName = editProfileDto.lastName;
+    this.applyEditProfile(user, editProfileDto);
     return this.userRepository.save(user);
   }
 
-  async changeAvatar(userId: string, avatar: string): Promise<User> {
-    const user = await this.findById(userId);
-    user.avatar = avatar;
+  async changeAvatar(userId: string, newAvatarFilePath: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    // Si existe un avatar previo, eliminarlo
+    if (user.avatar) {
+      try {
+        const oldAvatarPath = join(
+          process.cwd(),
+          'uploads',
+          'user',
+          'avatar',
+          user.avatar,
+        );
+        await fs.unlink(oldAvatarPath);
+      } catch (error) {
+        // Log error pero continuar con la actualización
+        console.error('Error eliminando avatar anterior:', error);
+      }
+    }
+
+    user.avatar = newAvatarFilePath;
     return this.userRepository.save(user);
   }
 

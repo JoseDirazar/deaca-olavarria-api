@@ -8,11 +8,12 @@ import * as uuid from 'uuid';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+export const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
 
+@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @UseGuards(JwtAuthGuard)
   @Get('')
@@ -28,18 +29,21 @@ export class UserController {
     return { ok: true, user: usersaved };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put('avatar')
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter(req, file, callback) {
-        if (!allowedFileExtensions.includes(file.originalname.split('.').pop() ?? '')) {
+        if (
+          !allowedFileExtensions.includes(
+            file.originalname.split('.').pop() ?? '',
+          )
+        ) {
           return callback(new UnsupportedMediaTypeException(), false);
         }
         callback(null, true);
       },
       storage: diskStorage({
-        destination: './uploads/avatar/',
+        destination: './uploads/user/avatars/',
         filename: (req, file, callback) => {
           const uniqueSuffix = uuid.v4();
           const extension = file.originalname.split('.').pop();
@@ -52,11 +56,13 @@ export class UserController {
   async uploadFile(
     @UploadedFile()
     file: Express.Multer.File,
-    @GetUser() user: User,
+    @GetUser('id') userId: string,
   ) {
-    if (!file) throw new HttpException('a file is required', HttpStatus.BAD_REQUEST);
-    const avatar = file.filename;
-    const usersaved = await this.userService.changeAvatar(user.id, avatar);
+    if (!file)
+      throw new HttpException('a file is required', HttpStatus.BAD_REQUEST);
+
+    const newAvatar = file.filename;
+    const usersaved = await this.userService.changeAvatar(userId, newAvatar);
 
     return { ok: true, user: usersaved };
   }

@@ -14,4 +14,48 @@ export class CategoryService {
   async getCategories() {
     return await this.categoryRepository.find();
   }
+
+  async getSubcategories() {
+    return await this.subcategoryRepository.find();
+  }
+
+  async getSubcategoriesByCategory(id: string) {
+    return await this.subcategoryRepository.find({ where: { category: { id } } });
+  }
+
+  async createCategory(name: string) {
+    const category = this.categoryRepository.create({ name });
+    return await this.categoryRepository.save(category);
+  }
+
+  async createSubcategory(name: string, categoryId: string) {
+    const subcategory = this.subcategoryRepository.create({ name, category: { id: categoryId } });
+    return await this.subcategoryRepository.save(subcategory);
+  }
+
+  async updateCategory(id: string, name: string) {
+    const category = await this.categoryRepository.findOne({ where: { id } });
+    if (!category) return null;
+    category.name = name;
+    return await this.categoryRepository.save(category);
+  }
+
+  async updateSubcategory(id: string, name: string) {
+    const subcategory = await this.subcategoryRepository.findOne({ where: { id } });
+    if (!subcategory) return null;
+    subcategory.name = name;
+    return await this.subcategoryRepository.save(subcategory);
+  }
+
+  async deleteCategory(id: string) {
+    const category = await this.categoryRepository.findOne({ where: { id } });
+    if (!category) return null;
+    return await this.categoryRepository.remove(category);
+  }
+
+  async deleteSubcategory(id: string) {
+    const subcategory = await this.subcategoryRepository.findOne({ where: { id } });
+    if (!subcategory) return null;
+    return await this.subcategoryRepository.remove(subcategory);
+  }
 }

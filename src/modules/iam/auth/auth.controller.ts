@@ -1,11 +1,11 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 
 import { LogInDto } from './dto/log-in.dto';
 import { AuthService } from './auth.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from '@models/User.entity';
-import { LogInWithGoogleDto } from './dto/log-in-with-google.dto';
+import { SignInWithGoogleDto } from './dto/sign-in-with-google.dto';
 import { Public } from 'src/infrastructure/decorators/public-route.decorator';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { GetSessionId } from 'src/infrastructure/decorators/get-session-id.decorator';
@@ -13,11 +13,12 @@ import { SignUpDto } from './dto/sign-up.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Public()
   @Post('sign-up')
   async createUser(@Req() req: Request, @Body() dto: SignUpDto) {
+    if (!dto.email || !dto.password) throw new BadRequestException('Email y password son obligatorios');
     const serviceResponse = await this.authService.signUp(req, dto);
 
     return serviceResponse;
@@ -35,13 +36,13 @@ export class AuthController {
   }
 
   @Public()
-  @Post('/log-in-with-google')
+  @Post('/google-auth')
   async logInWithGoogle(
-    @Body() logInWithGoogleDto: LogInWithGoogleDto,
+    @Body() logInWithGoogleDto: SignInWithGoogleDto,
     @Req()
     request,
   ) {
-    const userResponse = await this.authService.logInWithGoogle(request, logInWithGoogleDto);
+    const userResponse = await this.authService.signInWithGoogle(request, logInWithGoogleDto);
     return userResponse;
   }
 
@@ -57,7 +58,14 @@ export class AuthController {
   getProfile(@GetUser() user: User, @GetSessionId() sessionId: number) {
     return { ok: true, user, sessionId };
   }
-  //router.post('/log-out', auth, logOut);
 
-  //router.post('', refreshToken);
+  async confirmEmail({
+    email,
+    emailCode,
+  }: {
+    email: string;
+    emailCode: string;
+  }) {
+    return this.authService.confirmEmail({ email, emailCode });
+  }
 }

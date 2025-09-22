@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/infrastructure/models/Base.entity';
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Subcategory } from './Subcategory.entity';
 import { Establishment } from './Establishment.entity';
 
@@ -11,6 +11,6 @@ export class Category extends BaseEntity {
   @OneToMany(() => Subcategory, (subcategory) => subcategory.category, { cascade: true })
   subcategories: Subcategory[];
 
-  @ManyToMany(() => Establishment, (establishment) => establishment.categories)
+  @ManyToOne(() => Establishment, (establishment) => establishment.categories)
   establishments: Establishment[];
 }

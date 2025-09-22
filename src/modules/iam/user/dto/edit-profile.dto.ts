@@ -1,17 +1,30 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  IsString,
+  Length,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 
 export class EditProfileDto {
   @IsString()
-  @IsNotEmpty({ message: 'Introduce un nombre.' })
+  @IsOptional()
   @Length(3, undefined, {
-    message: 'El nombre debe tener al menos 3 caracteres.',
+    message: 'First name must be at least 3 characters long.',
   })
-  firstName: string;
+  firstName?: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Introduce un apellido.' })
+  @IsOptional()
   @Length(3, undefined, {
-    message: 'El apellido debe tener al menos 3 caracteres.',
+    message: 'Last name must be at least 3 characters long.',
   })
-  lastName: string;
+  lastName?: string;
+
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  emailVerified?: boolean;
 }
