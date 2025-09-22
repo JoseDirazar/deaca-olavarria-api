@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { join } from 'path';
 import { AppService } from './app.service';
-import { DataService } from './scripts/DataService';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModuleOptions } from './config/options';
@@ -11,6 +10,8 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { IamModule } from '@modules/iam/iam.module';
 import { CategoryModule } from './modules/category/category.module';
 import { EstablishmentModule } from './modules/establishment/establishment.module';
+import { JwtGlobalModule } from './shared/jwt/jwt.module';
+import { DataService } from './infrastructure/scripts/DataService';
 
 const serveStaticOptions = {
   extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
@@ -19,6 +20,7 @@ const serveStaticOptions = {
 @Module({
   imports: [
     ConfigModule.forRoot(ConfigModuleOptions),
+    JwtGlobalModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'uploads', 'users', 'avatars'),
       serveRoot: '/users/avatar',
@@ -57,4 +59,4 @@ const serveStaticOptions = {
   controllers: [AppController],
   providers: [AppService, DataService],
 })
-export class AppModule {}
+export class AppModule { }

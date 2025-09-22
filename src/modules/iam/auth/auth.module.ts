@@ -2,31 +2,23 @@ import { forwardRef, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
-import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 import { Session } from '@models/Session.entity';
 import { SessionService } from './session.service';
 import { UserService } from '@modules/iam/user/user.service';
 import { User } from '@models/User.entity';
 import { EmailService } from '@modules/email/email.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('session.secret'),
-        signOptions: {
-          expiresIn: config.get<string>('session.expiresIn'),
-        },
-      }),
-    }),
+
     TypeOrmModule.forFeature([User, Session]),
   ],
-  providers: [UserService, AuthService, SessionService, EmailService],
+  providers: [UserService, AuthService, SessionService, EmailService, JwtAuthGuard, RolesGuard],
   controllers: [AuthController],
-  exports: [AuthModule],
+  exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
-export class AuthModule {}
+export class AuthModule { }

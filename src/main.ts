@@ -4,9 +4,9 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { urlencoded, json } from 'express';
 import * as pg from 'pg';
-import { DataService } from './scripts/DataService';
 import { HttpExceptionFilter } from './infrastructure/filters/global-exception.filter';
 import { winstonLogger } from './infrastructure/loggers/winston.logger';
+import { DataService } from './infrastructure/scripts/DataService';
 
 export const logger = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production' ? winstonLogger : new Logger('workitfy-backend');
 

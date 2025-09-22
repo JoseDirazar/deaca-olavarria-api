@@ -1,10 +1,14 @@
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { UUIDParamDto } from 'src/infrastructure/dto/uuid-param.dto';
+import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
+import { RolesAllowed } from '@modules/iam/auth/decorators/roles.decorator';
+import { Roles } from 'src/infrastructure/types/enums/Roles';
 
 @Controller('category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Get('')
   async getCategories() {
@@ -24,8 +28,8 @@ export class CategoryController {
     return { subcategories };
   }
 
-  @Get('subcategories/:id')
-  async getSubcategoriesByCategory(@Param('id') {id}: UUIDParamDto) {
+  @Get(':id/subcategories')
+  async getSubcategoriesByCategory(@Param() { id }: UUIDParamDto) {
     const subcategories = await this.categoryService.getSubcategoriesByCategory(id);
 
     if (!subcategories) return new NotFoundException('No se encontraron subcategorias');
@@ -34,6 +38,8 @@ export class CategoryController {
   }
 
   @Post('')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
   async createCategory(@Body() { name }: { name: string }) {
     if (!name) return new BadRequestException('El nombre es requerido');
     const category = await this.categoryService.createCategory(name);
@@ -42,6 +48,8 @@ export class CategoryController {
   }
 
   @Post('subcategories')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
   async createSubcategory(@Body() { name, categoryId }: { name: string; categoryId: string }) {
     if (!name) return new BadRequestException('El nombre es requerido');
     if (!categoryId) return new BadRequestException('El id de la categoria es requerido');
@@ -51,26 +59,34 @@ export class CategoryController {
   }
 
   @Put('')
-  async updateCategory(@Param('id') {id}: UUIDParamDto, @Body() { name }: { name: string }) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  async updateCategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
     const category = await this.categoryService.updateCategory(id, name);
     return { category };
   }
 
   @Put('subcategories')
-  async updateSubcategory(@Param('id') {id}: UUIDParamDto, @Body() { name }: { name: string }) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  async updateSubcategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
     const subcategory = await this.categoryService.updateSubcategory(id, name);
     return { subcategory };
   }
 
   @Delete('')
-  async deleteCategory(@Param('id') {id}: UUIDParamDto) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  async deleteCategory(@Param() { id }: UUIDParamDto) {
     const category = await this.categoryService.deleteCategory(id);
     return { category };
   }
 
   @Delete('subcategories')
-  async deleteSubcategory(@Param('id') {id}: UUIDParamDto) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  async deleteSubcategory(@Param() { id }: UUIDParamDto) {
     const subcategory = await this.categoryService.deleteSubcategory(id);
     return { subcategory };
-  } 
+  }
 }
