@@ -33,7 +33,7 @@ export class UserService {
     user.password = hashedPassword;
     user.role = Roles.USER;
     user.emailCode = emailVerificationCode;
-    user.emailCodeCreateAt = new Date();
+    user.emailCodeCreatedAt = new Date();
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
@@ -162,5 +162,36 @@ export class UserService {
       .join('');
 
     return password;
+  }
+
+  async approveEstablishmentOwner(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    user.role = Roles.BUSINESS_OWNER;
+    return this.userRepository.save(user);
+  }
+
+  async requestPasswordResetCode(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const resetCode = Math.floor(Math.random() * 100000)
+      .toString()
+      .padStart(5, '0');
+    user.emailCode = resetCode;
+    user.emailCodeCreatedAt = new Date();
+    await this.userRepository.save(user);
+
+    await this.emailService.sendEmail(
+      email,
+      'Codigo para restablecer contraseña',
+      `<p>Tu codigo para restablecer contraseña es: ${resetCode}</p><p>Este codigo expira en 24 horas.</p>`,
+    );
+
+    return user;
   }
 }

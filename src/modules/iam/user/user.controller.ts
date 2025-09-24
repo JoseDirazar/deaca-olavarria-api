@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, HttpException, HttpStatus, UnsupportedMediaTypeException } from '@nestjs/common';
+import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, HttpException, HttpStatus, UnsupportedMediaTypeException, Post, NotFoundException } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -8,9 +8,10 @@ import * as uuid from 'uuid';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesAllowed } from '../auth/decorators/roles.decorator';
+import { Roles } from 'src/infrastructure/types/enums/Roles';
 export const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
 
-@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
@@ -18,6 +19,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('')
   getProfile(@GetUser() user: User) {
+    console.log('user controller', user);
     return { ok: true, user };
   }
 
@@ -30,6 +32,7 @@ export class UserController {
   }
 
   @Put('avatar')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter(req, file, callback) {
@@ -65,5 +68,15 @@ export class UserController {
     const usersaved = await this.userService.changeAvatar(userId, newAvatar);
 
     return { ok: true, user: usersaved };
+  }
+
+  @Post('approve-establishment-owner')
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  async approveEstablishmentOwner(@Body('userId') userId: string) {
+    const user = await this.userService.approveEstablishmentOwner(userId);
+    if (!user) return new NotFoundException('No se encontro el usuario');
+
+    return user;
   }
 }

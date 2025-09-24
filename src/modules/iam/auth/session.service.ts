@@ -9,7 +9,7 @@ export class SessionService {
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async createSession(req, user: User): Promise<Session> {
     const jwtTokenRefreshExpiration: number = this.configService.get<number>('session.jwtTokenRefreshExpiration') ?? 604800; // 1 semana
@@ -28,17 +28,19 @@ export class SessionService {
     return this.sessionRepository.save(session);
   }
 
-  async removeSession(session: Session): Promise<void> {
+  async removeSession(sessionId: string): Promise<void> {
+    const session = await this.findByIds(sessionId);
+    if (!session) return;
     await this.sessionRepository.remove(session);
   }
 
-  async findByIds(userId, sessionId): Promise<Session | null> {
+  async findByIds(sessionId: string): Promise<Session | null> {
     return this.sessionRepository.findOne({
-      where: { id: sessionId, user: { id: userId } },
+      where: { id: sessionId },
     });
   }
 
-  async findById(sessionId): Promise<Session | null> {
+  async findById(sessionId: string): Promise<Session | null> {
     return this.sessionRepository.findOne({
       where: { id: sessionId },
     });

@@ -31,7 +31,7 @@ export class User extends BaseEntity {
   lastName: string;
 
   @Column({ nullable: true, type: 'timestamp', select: false })
-  emailCodeCreateAt: Date;
+  emailCodeCreatedAt: Date;
 
   @Column({ type: 'enum', enum: Roles, default: Roles.USER })
   role: Roles;
