@@ -11,7 +11,7 @@ export class SessionService {
     private readonly configService: ConfigService,
   ) { }
 
-  async createSession(req, user: User): Promise<Session> {
+  async createSession(req: Request, user: User): Promise<Session> {
     const jwtTokenRefreshExpiration: number = this.configService.get<number>('session.jwtTokenRefreshExpiration') ?? 604800; // 1 semana
 
     const expiredAt = new Date();
@@ -20,7 +20,7 @@ export class SessionService {
 
     const session = new Session();
     session.user = user;
-    session.ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+    session.ip = req.headers['x-forwarded-for'] || req["connection"].remoteAddress || '';
     session.browser = userAgent?.match(/(chrome|firefox|safari|edge|opera)/i) || '';
     session.operatingSystem = userAgent?.match(/(windows|mac os|linux|android|iOS)/i) || '';
     session.expiredAt = expiredAt;

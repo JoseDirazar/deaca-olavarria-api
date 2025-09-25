@@ -3,10 +3,8 @@ import { BadRequestException, Body, Controller, Post, Req, UseGuards } from '@ne
 import { AuthService } from './auth.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { User } from '@models/User.entity';
 import { SignInWithGoogleDto } from './dto/sign-in-with-google.dto';
 import { Public } from 'src/infrastructure/decorators/public-route.decorator';
-import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { GetSessionId } from 'src/infrastructure/decorators/get-session-id.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -58,8 +56,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('sign-out')
-  signOut(@GetUser() user: User, @GetSessionId() sessionId: string) {
-    this.authService.signOut(user, sessionId);
+  signOut(@GetSessionId() sessionId: string) {
+    this.authService.signOut(sessionId);
     return { ok: true };
   }
 
@@ -78,14 +76,9 @@ export class AuthController {
   @Public()
   @Post('reset-password')
   async resetPassword(
-    @Req() request: Request,
+    @Req() req: Request,
     @Body() dto: ResetPasswordDto,
   ) {
-    return this.authService.resetPassword(
-      request,
-      dto.email,
-      dto.resetCode,
-      dto.newPassword,
-    );
+    return this.authService.resetPassword({ req, ...dto });
   }
 }
