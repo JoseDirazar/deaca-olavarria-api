@@ -1,6 +1,5 @@
 import { BadRequestException, Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 
-import { LogInDto } from './dto/log-in.dto';
 import { AuthService } from './auth.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -12,7 +11,8 @@ import { GetSessionId } from 'src/infrastructure/decorators/get-session-id.decor
 import { SignUpDto } from './dto/sign-up.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
-import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { SignInDto } from './dto/log-in.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -28,13 +28,13 @@ export class AuthController {
   }
 
   @Public()
-  @Post('log-in')
-  async logIn(
-    @Body() logInDto: LogInDto,
+  @Post('sign-in')
+  async signIn(
+    @Body() signInDto: SignInDto,
     @Req()
-    request,
+    request: Request,
   ) {
-    const userResponse = await this.authService.logIn(request, logInDto);
+    const userResponse = await this.authService.signIn(request, signInDto);
     return userResponse;
   }
 
@@ -43,10 +43,9 @@ export class AuthController {
   async logInWithGoogle(
     @Body() logInWithGoogleDto: SignInWithGoogleDto,
     @Req()
-    request,
+    request: Request,
   ) {
     const userResponse = await this.authService.signInWithGoogle(request, logInWithGoogleDto);
-    console.log({ userResponse })
     return userResponse;
   }
 
@@ -58,21 +57,16 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('log-out')
-  getProfile(@GetUser() user: User, @GetSessionId() sessionId: number) {
-    return { ok: true, user, sessionId };
+  @Post('sign-out')
+  signOut(@GetUser() user: User, @GetSessionId() sessionId: string) {
+    this.authService.signOut(user, sessionId);
+    return { ok: true };
   }
 
   @Public()
   @Post('confirm-email')
-  async confirmEmail({
-    email,
-    emailCode,
-  }: {
-    email: string;
-    emailCode: string;
-  }) {
-    return this.authService.confirmEmail({ email, emailCode });
+  async confirmEmail(@Body() dto: VerifyEmailDto) {
+    return this.authService.confirmEmail(dto);
   }
 
   @Public()

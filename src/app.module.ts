@@ -48,7 +48,7 @@ const serveStaticOptions = {
         database: configService.get<string>('database.name'),
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
-        dropSchema: configService.get<string>('NODE_ENV') !== 'production',
+        force: configService.get<string>('NODE_ENV') !== 'production',
         namingStrategy: new SnakeNamingStrategy(),
       }),
     }),

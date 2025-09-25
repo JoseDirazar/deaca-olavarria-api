@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
 
-export class LogInDto {
+export class SignInDto {
   @IsEmail({}, { message: 'Correo electrónico no válido.' })
   @IsNotEmpty({ message: 'Introduce un Correo electrónico.' })
   email: string;

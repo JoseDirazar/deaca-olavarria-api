@@ -27,4 +27,24 @@ export class EditProfileDto {
   @IsBoolean()
   @IsOptional()
   emailVerified?: boolean;
+
+  @IsString()
+  @IsOptional()
+  emailCode?: string;
+
+  @IsString()
+  @IsOptional()
+  emailCodeCreatedAt?: Date;
+
+  @IsString()
+  @IsOptional()
+  password?: string;
+
+  @IsString()
+  @IsOptional()
+  role?: string;
+
+  @IsString()
+  @IsOptional()
+  lastLogin?: Date;
 }

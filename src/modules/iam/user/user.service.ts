@@ -66,10 +66,14 @@ export class UserService {
     return user;
   }
 
-  async findByEmailWithPassword(email: string): Promise<User | null> {
-    const user = await this.userRepository.createQueryBuilder('user').select('user.password').where('user.email = :email', { email }).getRawOne();
+  async findByEmailWithPassword(email: string): Promise<string | null> {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
 
-    if (user) return user.user_password;
+    if (user) return (user as User).password as any;
 
     return null;
   }
@@ -86,6 +90,11 @@ export class UserService {
       'lastName',
       'avatar',
       'emailVerified',
+      'emailCode',
+      'emailCodeCreatedAt',
+      'password',
+      'role',
+      'lastLogin',
     ];
 
     for (const key of allowedKeys) {
@@ -96,8 +105,7 @@ export class UserService {
     }
   }
 
-  async editProfile(userId: string, editProfileDto: EditProfileDto): Promise<User> {
-    const user = await this.findById(userId);
+  async editProfile(user: User, editProfileDto: EditProfileDto): Promise<User> {
     this.applyEditProfile(user, editProfileDto);
     return this.userRepository.save(user);
   }
@@ -174,7 +182,12 @@ export class UserService {
   }
 
   async requestPasswordResetCode(email: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.createQueryBuilder('user').where('user.email = :email', { email })
+      .addSelect('user.password')
+      .addSelect('user.emailCode')
+      .addSelect('user.emailCodeCreatedAt')
+      .getOne();
+    console.log("USER: ", user);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -192,6 +205,27 @@ export class UserService {
       `<p>Tu codigo para restablecer contraseña es: ${resetCode}</p><p>Este codigo expira en 24 horas.</p>`,
     );
 
+    return user;
+  }
+
+  async getVerificationCode(email: string) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.emailCode') // 👈 con esto incluís el campo
+      .where('user.email = :email', { email })
+      .getOne();
+    return user;
+  }
+
+  async getResssetCodeAndPassword(email: string) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.emailCode')
+      .addSelect('user.password')
+      .addSelect('user.emailCodeCreatedAt')
+      .addSelect('user.id')
+      .where('user.email = :email', { email })
+      .getOne();
     return user;
   }
 }

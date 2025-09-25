@@ -19,14 +19,13 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('')
   getProfile(@GetUser() user: User) {
-    console.log('user controller', user);
     return { ok: true, user };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('')
   async editProfile(@GetUser() user: User, @Body() editProfileDto: EditProfileDto) {
-    const usersaved = await this.userService.editProfile(user.id, editProfileDto);
+    const usersaved = await this.userService.editProfile(user, editProfileDto);
 
     return { ok: true, user: usersaved };
   }

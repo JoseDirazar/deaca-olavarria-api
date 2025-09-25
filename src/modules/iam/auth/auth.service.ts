@@ -4,7 +4,7 @@ import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import axios from 'axios';
 import { Logger } from '@nestjs/common';
-import { LogInDto } from './dto/log-in.dto';
+import { SignInDto } from './dto/log-in.dto';
 import { SessionService } from './session.service';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -15,7 +15,6 @@ import { User } from '@models/User.entity';
 import path from 'path';
 import * as fs from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
-import { IGoogleUser } from 'src/infrastructure/types/interfaces/auth';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 
 
@@ -30,7 +29,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) { }
 
-  async signUp(req, signupDto: SignUpDto) {
+  async signUp(req: Request, signupDto: SignUpDto) {
     const userExist = await this.userService.userExistByEmail(signupDto.email);
     if (userExist) throw new NotFoundException('El usuario ya existe');
 
@@ -47,16 +46,20 @@ export class AuthService {
     };
   }
 
-  async logIn(req, logInDto: LogInDto) {
-    const user = await this.userService.userExistByEmail(logInDto.email);
+  async signIn(req: Request, signInDto: SignInDto) {
+    const user = await this.userService.userExistByEmail(signInDto.email);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const userPassword = await this.userService.findByEmailWithPassword(logInDto.email);
+    const userPassword = await this.userService.findByEmailWithPassword(signInDto.email);
 
-    if (!bcrypt.compareSync(logInDto.password, userPassword)) {
+    if (!userPassword) {
+      throw new UnauthorizedException('Contraseña no válida.');
+    }
+    console.log("BCRYPT COMPARE: ", bcrypt.compareSync(signInDto.password, userPassword));
+    if (!bcrypt.compareSync(signInDto.password, userPassword)) {
       throw new UnauthorizedException('Contraseña no válida.');
     }
 
@@ -70,22 +73,20 @@ export class AuthService {
       ok: true,
       token,
       refreshToken,
+      user,
     };
   }
 
-  async signInWithGoogle(req, signInWithGoogleDto: SignInWithGoogleDto) {
+  async signInWithGoogle(req: Request, signInWithGoogleDto: SignInWithGoogleDto) {
     const googleUser: TokenPayload = await this.getUserWithGoogleTokens(
       signInWithGoogleDto.accessToken,
     );
-    console.log("googleUser", googleUser);
     const user = await this.userService.userExistByEmail(googleUser.email!);
 
     if (!user) {
       const userCreated = await this.userService.createWithGoogle(
         googleUser.email!,
       );
-
-      // Set email as verified since it's Google authenticated
       userCreated.emailVerified = true;
 
       userCreated.avatar = googleUser?.picture || "";
@@ -114,7 +115,7 @@ export class AuthService {
     user.avatar = googleUser?.picture || "";
     user.firstName = googleUser?.given_name || "";
     user.lastName = googleUser?.family_name || "";
-    await this.userService.editProfile(user.id, user);
+    await this.userService.editProfile(user, user);
     await this.userService.updateLastLogin(user);
 
     const { refreshToken, session } = await this.generateAccessRefreshToken(
@@ -132,7 +133,7 @@ export class AuthService {
     };
   }
 
-  async generateAccessRefreshToken(req, user: User): Promise<AccessRefreshTokenGenerated> {
+  async generateAccessRefreshToken(req: Request, user: User): Promise<AccessRefreshTokenGenerated> {
     const session = await this.sessionService.createSession(req, user);
 
     const payload = { userId: user.id, sessionId: session.id };
@@ -296,17 +297,16 @@ export class AuthService {
     email: string;
     emailCode: string;
   }) {
-    const user = await this.userService.userExistByEmail(email);
+    const user = await this.userService.getVerificationCode(email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
     if (user.emailCode !== emailCode) {
       throw new NotFoundException('Email code not valid');
     }
     user.emailVerified = true;
     user.emailCode = '';
-    return this.userService.editProfile(user.id, user);
+    return this.userService.editProfile(user, user);
   }
 
   async requestPasswordReset(email: string) {
@@ -320,7 +320,7 @@ export class AuthService {
     resetCode: string,
     newPassword: string,
   ) {
-    const user = await this.userService.userExistByEmail(email);
+    const user = await this.userService.getResssetCodeAndPassword(email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -330,7 +330,9 @@ export class AuthService {
     }
 
     // Check if code is expired (1 hour validity)
-    const codeAge = Date.now() - user.emailCodeCreatedAt.getTime();
+    const codeAge = Date.now() - new Date(user.emailCodeCreatedAt).getTime();
+    console.log("CODE AGE: ", codeAge);
+    console.log("emailCodeCreatedAt: ", user.emailCodeCreatedAt, new Date(user.emailCodeCreatedAt));
     if (codeAge > 3600000 * 24) {
       // 1 hour in milliseconds
       throw new UnauthorizedException('Reset code has expired');
@@ -343,7 +345,8 @@ export class AuthService {
     // Update password and clear reset code
     user.password = hashedPassword;
     user.emailCode = '';
-    await this.userService.editProfile(user.id, user);
+    console.log("UPDATED USER: ", user);
+    await this.userService.editProfile(user, user);
 
     // Generate tokens for immediate login
     const { refreshToken, session } = await this.generateAccessRefreshToken(
@@ -359,5 +362,10 @@ export class AuthService {
       refreshToken,
       user,
     };
+  }
+
+  async signOut(user: User, sessionId: string) {
+    await this.sessionService.removeSession(sessionId);
+    return { ok: true, message: 'User signed out successfully' };
   }
 }
