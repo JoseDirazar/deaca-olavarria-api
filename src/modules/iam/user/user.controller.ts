@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, HttpException, HttpStatus, UnsupportedMediaTypeException, Post, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, HttpException, HttpStatus, UnsupportedMediaTypeException, Post, NotFoundException, Query } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -10,6 +10,7 @@ import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesAllowed } from '../auth/decorators/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
+import { GetUsersPaginatedQueryParamsDto } from './dto/get-users-paginated-query-params.dto';
 export const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
 
 @Controller('user')
@@ -17,9 +18,16 @@ export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @UseGuards(JwtAuthGuard)
-  @Get('')
+  @Get('me')
   getProfile(@GetUser() user: User) {
     return { ok: true, user };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Get('')
+  getUsers(@Query() params: GetUsersPaginatedQueryParamsDto) {
+    return this.userService.getUsers(params).then((res) => ({ ok: true, ...res }));
   }
 
   @UseGuards(JwtAuthGuard)

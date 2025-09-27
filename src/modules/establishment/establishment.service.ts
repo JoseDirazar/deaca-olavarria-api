@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { EstablishmentDto } from './dto/establishment.dto';
 import { Image } from '@models/Image.entity';
-import { UserService } from '@modules/iam/user/user.service';
 import { User } from '@models/User.entity';
 
 @Injectable()
@@ -23,23 +22,54 @@ export class EstablishmentService {
     const subcategories = params['subcategories[]'];
     const categories = params['categories[]'];
     const name = params.name;
+    const address = params.address;
+    const sortBy = params.sortBy ?? 'createdAt';
+    const sortOrder = (params.sortOrder ?? 'DESC').toUpperCase() as 'ASC' | 'DESC';
 
-    const establishmentsQueryBuilder = this.establishmentRepository.createQueryBuilder('establishments').leftJoinAndSelect('establishments.categories', 'categories').leftJoinAndSelect('establishments.subcategories', 'subcategories');
+    const establishmentsQueryBuilder = this.establishmentRepository
+      .createQueryBuilder('establishments')
+      .leftJoinAndSelect('establishments.categories', 'categories')
+      .leftJoinAndSelect('establishments.subcategories', 'subcategories');
 
+    // Usar EXISTS en lugar de JOIN directo para filtros
     if (subcategories) {
-      establishmentsQueryBuilder.andWhere('subcategories.id IN (:...subcategories)', { subcategories });
+      establishmentsQueryBuilder.andWhere(
+        'EXISTS (SELECT 1 FROM establishments_subcategories_subcategories ess ' +
+        'JOIN subcategories s ON ess.subcategoriesId = s.id ' +
+        'WHERE ess.establishmentsId = establishments.id AND s.name IN (:...subcategories))',
+        { subcategories }
+      );
     }
+
     if (categories) {
-      establishmentsQueryBuilder.andWhere('categories.id IN (:...categories)', { categories });
+      establishmentsQueryBuilder.andWhere(
+        'EXISTS (SELECT 1 FROM establishments_categories_categories ecc ' +
+        'JOIN categories c ON ecc.categoriesId = c.id ' +
+        'WHERE ecc.establishmentsId = establishments.id AND c.name IN (:...categories))',
+        { categories }
+      );
     }
+
     if (name) {
       establishmentsQueryBuilder.andWhere('establishments.name ILIKE :name', { name: `%${name}%` });
     }
+    if (address) {
+      establishmentsQueryBuilder.andWhere('establishments.address ILIKE :address', { address: `%${address}%` });
+    }
+
+    // Sorting whitelist to avoid SQL injection
+    const sortWhitelist: Record<string, string> = {
+      name: 'establishments.name',
+      address: 'establishments.address',
+      createdAt: 'establishments.createdAt',
+    };
+    const sortColumn = sortWhitelist[sortBy] ?? sortWhitelist['createdAt'];
+    establishmentsQueryBuilder.orderBy(sortColumn, sortOrder);
+
     const [establishments, total] = await establishmentsQueryBuilder
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
-
 
     return {
       data: establishments,

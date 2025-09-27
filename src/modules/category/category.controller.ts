@@ -58,7 +58,7 @@ export class CategoryController {
     return { subcategory };
   }
 
-  @Put('')
+  @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async updateCategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
@@ -66,7 +66,7 @@ export class CategoryController {
     return { category };
   }
 
-  @Put('subcategories')
+  @Put('subcategories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async updateSubcategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
@@ -74,7 +74,7 @@ export class CategoryController {
     return { subcategory };
   }
 
-  @Delete('')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async deleteCategory(@Param() { id }: UUIDParamDto) {
@@ -82,7 +82,7 @@ export class CategoryController {
     return { category };
   }
 
-  @Delete('subcategories')
+  @Delete('subcategories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async deleteSubcategory(@Param() { id }: UUIDParamDto) {

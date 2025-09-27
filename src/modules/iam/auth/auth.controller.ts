@@ -20,9 +20,8 @@ export class AuthController {
   @Post('sign-up')
   async createUser(@Req() req: Request, @Body() dto: SignUpDto) {
     if (!dto.email || !dto.password) throw new BadRequestException('Email y password son obligatorios');
-    const serviceResponse = await this.authService.signUp(req, dto);
-
-    return serviceResponse;
+    const { accessToken, refreshToken } = await this.authService.signUp(req, dto);
+    return { ok: true, accessToken, token: accessToken, refreshToken };
   }
 
   @Public()
@@ -32,8 +31,8 @@ export class AuthController {
     @Req()
     request: Request,
   ) {
-    const userResponse = await this.authService.signIn(request, signInDto);
-    return userResponse;
+    const { accessToken, refreshToken, user } = await this.authService.signIn(request, signInDto);
+    return { ok: true, accessToken, token: accessToken, refreshToken, user };
   }
 
   @Public()
@@ -43,15 +42,15 @@ export class AuthController {
     @Req()
     request: Request,
   ) {
-    const userResponse = await this.authService.signInWithGoogle(request, logInWithGoogleDto);
-    return userResponse;
+    const { accessToken, refreshToken, user } = await this.authService.signInWithGoogle(request, logInWithGoogleDto);
+    return { ok: true, accessToken, token: accessToken, refreshToken, user };
   }
 
   @Public()
   @Post('refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto, @GetSessionId() sessionId: string) {
     const token = await this.authService.refreshToken(refreshTokenDto, sessionId);
-    return { ok: true, token };
+    return { ok: true, accessToken: token, token };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -64,13 +63,15 @@ export class AuthController {
   @Public()
   @Post('confirm-email')
   async confirmEmail(@Body() dto: VerifyEmailDto) {
-    return this.authService.confirmEmail(dto);
+    const user = await this.authService.confirmEmail(dto);
+    return { ok: true, user };
   }
 
   @Public()
   @Post('request-password-reset')
   async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto) {
-    return this.authService.requestPasswordReset(requestPasswordResetDto.email);
+    await this.authService.requestPasswordReset(requestPasswordResetDto.email);
+    return { ok: true, message: 'Reset code sent to email' };
   }
 
   @Public()
@@ -79,6 +80,7 @@ export class AuthController {
     @Req() req: Request,
     @Body() dto: ResetPasswordDto,
   ) {
-    return this.authService.resetPassword({ req, ...dto });
+    const { accessToken, refreshToken, user } = await this.authService.resetPassword({ req, ...dto });
+    return { ok: true, message: 'Password updated successfully', accessToken, token: accessToken, refreshToken, user };
   }
 }

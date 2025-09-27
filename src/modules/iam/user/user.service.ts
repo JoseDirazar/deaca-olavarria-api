@@ -9,6 +9,8 @@ import { SignUpDto } from '../auth/dto/sign-up.dto';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { join } from 'path';
 import * as fs from 'fs/promises';
+import { GetUsersPaginatedQueryParamsDto } from './dto/get-users-paginated-query-params.dto';
+import { PaginatedResponse } from 'src/infrastructure/types/interfaces/pagination.interface';
 
 @Injectable()
 export class UserService {
@@ -17,6 +19,52 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     private readonly emailService: EmailService,
   ) { }
+
+  async getUsers(params: GetUsersPaginatedQueryParamsDto): Promise<PaginatedResponse<User>> {
+    const { page = 1, limit = 10, role, email, search, sortBy, sortOrder } = params;
+    const queryBuilder = this.userRepository.createQueryBuilder('user');
+
+    if (role) queryBuilder.andWhere('user.role = :role', { role });
+    if (email) queryBuilder.andWhere('user.email = :email', { email });
+
+    if (search) {
+      // Search by full name or email using CONCAT function
+      queryBuilder.andWhere(
+        '(CONCAT(user.firstName, \' \', user.lastName) ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    // Whitelisted sorts to prevent SQL injection
+    const allowedSorts: Record<string, string> = {
+      firstName: 'user.firstName',
+      lastName: 'user.lastName',
+      email: 'user.email',
+      createdAt: 'user.createdAt',
+      role: 'user.role',
+      lastLogin: 'user.lastLogin',
+    };
+
+    const orderColumn = sortBy && allowedSorts[sortBy] ? allowedSorts[sortBy] : 'user.lastLogin';
+    const orderDirection: 'ASC' | 'DESC' = sortOrder === 'ASC' ? 'ASC' : 'DESC';
+    queryBuilder.orderBy(orderColumn, orderDirection);
+
+    const [users, count] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      data: users,
+      meta: {
+        itemCount: count,
+        itemsPerPage: limit,
+        currentPage: page,
+        totalItems: count,
+        totalPages: Math.ceil(count / limit)
+      }
+    };
+  }
 
   async createUser(dto: SignUpDto): Promise<User> {
 
@@ -187,7 +235,6 @@ export class UserService {
       .addSelect('user.emailCode')
       .addSelect('user.emailCodeCreatedAt')
       .getOne();
-    console.log("USER: ", user);
     if (!user) {
       throw new NotFoundException('User not found');
     }

@@ -42,7 +42,6 @@ export class AuthService {
     const accessToken = await this.generateAccessToken(user.id, session.id);
 
     return {
-      ok: true,
       accessToken,
       refreshToken,
     };
@@ -60,7 +59,6 @@ export class AuthService {
     if (!userPassword) {
       throw new UnauthorizedException('Contraseña no válida.');
     }
-    console.log("BCRYPT COMPARE: ", bcrypt.compareSync(signInDto.password, userPassword));
     if (!bcrypt.compareSync(signInDto.password, userPassword)) {
       throw new UnauthorizedException('Contraseña no válida.');
     }
@@ -69,11 +67,10 @@ export class AuthService {
 
     const { refreshToken, session } = await this.generateAccessRefreshToken(req, user);
 
-    const token = await this.generateAccessToken(user.id, session.id);
+    const accessToken = await this.generateAccessToken(user.id, session.id);
 
     return {
-      ok: true,
-      token,
+      accessToken,
       refreshToken,
       user,
     };
@@ -103,11 +100,10 @@ export class AuthService {
         userCreated,
       );
 
-      const token = await this.generateAccessToken(userCreated.id, session.id);
+      const accessToken = await this.generateAccessToken(userCreated.id, session.id);
 
       return {
-        ok: true,
-        token,
+        accessToken,
         refreshToken,
         user: userCreated,
       };
@@ -129,7 +125,6 @@ export class AuthService {
     const accessToken = await this.generateAccessToken(user.id, session.id);
 
     return {
-      ok: true,
       accessToken,
       refreshToken,
       user
@@ -293,7 +288,6 @@ export class AuthService {
 
   async requestPasswordReset(email: string) {
     await this.userService.requestPasswordResetCode(email);
-    return { ok: true, message: 'Reset code sent to email' };
   }
 
   async resetPassword(
@@ -324,8 +318,6 @@ export class AuthService {
     const accessToken = await this.generateAccessToken(user.id, session.id);
 
     return {
-      ok: true,
-      message: 'Password updated successfully',
       accessToken,
       refreshToken,
       user,
@@ -334,6 +326,5 @@ export class AuthService {
 
   async signOut(sessionId: string) {
     await this.sessionService.removeSession(sessionId);
-    return { ok: true, message: 'User signed out successfully' };
   }
 }
