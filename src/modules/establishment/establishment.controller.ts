@@ -11,6 +11,9 @@ import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { UserService } from '@modules/iam/user/user.service';
 import { RolesAllowed } from '@modules/iam/auth/decorators/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
+import { Patch, Delete } from '@nestjs/common';
+import { User } from '@models/User.entity';
+import { UUIDParamDto } from 'src/infrastructure/dto/uuid-param.dto';
 
 @Controller('establishment')
 export class EstablishmentController {
@@ -24,26 +27,50 @@ export class EstablishmentController {
     return establishments;
   }
 
+  // Owner list my establishments
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @Get('mine')
+  async getMyEstablishments(@GetUser('id') userId: string) {
+    const items = await this.establishmentService.getEstablishmentsByUser(userId);
+    return { data: items };
+  }
+
   @Get(':id')
-  async getEstablishmentById(@Param('id') id: string) {
+  async getEstablishmentById(@Param('id') { id }: UUIDParamDto) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) return new NotFoundException('No se encontro el establecimiento');
 
     return establishment;
   }
 
+  // Owner create establishment for self
   @UseGuards(JwtAuthGuard)
-  @RolesAllowed(Roles.ADMIN)
-  @Post('')
-  async createEstablishment(@Body('establishment') establishmentDto: EstablishmentDto, @Body('userId') userId: string) {
-    const user = await this.userService.findById(userId);
-    if (!user) {
-      throw new NotFoundException('Usuario no encontrado, el establecimiento debe pertenecer a un usuario');
-    }
+  @RolesAllowed(Roles.ADMIN, Roles.BUSINESS_OWNER)
+  @Post('mine')
+  async createMyEstablishment(@Body() establishmentDto: EstablishmentDto, @GetUser() user: User) {
     const establishment = await this.establishmentService.createEstablishment(establishmentDto, user);
     if (!establishment) return new NotFoundException('No se pudo crear el establecimiento');
-
     return establishment;
+  }
+
+
+
+  // Owner update my establishment
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @Put(':id')
+  async updateMyEstablishment(@Param('id') id: string, @Body() establishmentDto: Partial<EstablishmentDto>) {
+    const updated = await this.establishmentService.updateEstablishment(id, establishmentDto);
+    return updated;
+  }
+
+  // Owner delete my establishment
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @Delete(':id')
+  async deleteMyEstablishment(@Param('id') id: string) {
+    return await this.establishmentService.deleteEstablishment(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -129,4 +156,51 @@ export class EstablishmentController {
 
     return { ok: true, user: usersaved };
   }
+
+  // Admin verify toggle
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Patch(':id/verify')
+  async verifyEstablishment(@Param('id') id: string, @Body('verified') verified: boolean) {
+    const updated = await this.establishmentService.setVerified(id, verified);
+    return updated;
+  }
+
+  // Upload establishment avatar (owner)
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @Post(':id/avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      fileFilter(req, file, callback) {
+        if (
+          !allowedFileExtensions.includes(
+            file.originalname.split('.').pop() ?? '',
+          )
+        ) {
+          return callback(new UnsupportedMediaTypeException(), false);
+        }
+        callback(null, true);
+      },
+      storage: diskStorage({
+        destination: './uploads/establishments/avatars/',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = uuid.v4();
+          const extension = file.originalname.split('.').pop();
+          const uniqueFilename = `${uniqueSuffix}.${extension}`;
+          callback(null, uniqueFilename);
+        },
+      }),
+    }),
+  )
+  async uploadEstablishmentAvatar(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file)
+      throw new HttpException('a file is required', HttpStatus.BAD_REQUEST);
+    const updated = await this.establishmentService.updateEstablishment(id, { avatar: file.filename } as any);
+    return { ok: true, establishment: updated };
+  }
 }
+

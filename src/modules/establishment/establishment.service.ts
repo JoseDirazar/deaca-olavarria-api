@@ -16,6 +16,25 @@ export class EstablishmentService {
     private readonly imageRepository: Repository<Image>,
   ) { }
 
+  private computeIsComplete(est: Establishment): boolean {
+    const hasAvatar = Boolean(est.avatar && est.avatar.trim().length > 0);
+    const imagesCount = Array.isArray(est.images) ? est.images.length : 0;
+    const hasMinImages = imagesCount >= 5;
+    const hasCategory = Array.isArray(est.categories) && est.categories.length >= 1;
+    const hasSubcategory = Array.isArray(est.subcategories) && est.subcategories.length >= 1;
+    return hasAvatar && hasMinImages && hasCategory && hasSubcategory;
+  }
+
+  private async refreshCompleteness(establishmentId: string): Promise<Establishment> {
+    const establishment = await this.establishmentRepository.findOne({
+      where: { id: establishmentId },
+      relations: ['categories', 'subcategories', 'images'],
+    });
+    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    establishment.isComplete = this.computeIsComplete(establishment);
+    return await this.establishmentRepository.save(establishment);
+  }
+
   async getPaginatedEstablishments(params: EstablishmentsPaginationQueryParamsDto) {
     const page = params?.page || 1;
     const limit = params?.limit || 10;
@@ -98,10 +117,40 @@ export class EstablishmentService {
   }
 
   async createEstablishment(establishmentDto: EstablishmentDto, user: User) {
-
-
     const establishment = this.establishmentRepository.create({ ...establishmentDto, user });
+    const created = await this.establishmentRepository.save(establishment);
+    // Refresh completeness after create (loads relations properly)
+    return await this.refreshCompleteness(created.id);
+  }
+
+  async updateEstablishment(id: string, establishmentDto: Partial<EstablishmentDto>) {
+    const establishment = await this.establishmentRepository.findOne({ where: { id } });
+    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    Object.assign(establishment, establishmentDto);
+    await this.establishmentRepository.save(establishment);
+    return await this.refreshCompleteness(id);
+  }
+
+  async deleteEstablishment(id: string) {
+    const establishment = await this.establishmentRepository.findOne({ where: { id } });
+    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    await this.establishmentRepository.remove(establishment);
+    return { ok: true };
+  }
+
+  async setVerified(id: string, verified: boolean) {
+    const establishment = await this.establishmentRepository.findOne({ where: { id } });
+    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    establishment.verified = Boolean(verified);
     return await this.establishmentRepository.save(establishment);
+  }
+
+  async getEstablishmentsByUser(userId: string) {
+    return await this.establishmentRepository.find({
+      where: { user: { id: userId } as any },
+      relations: ['categories', 'subcategories', 'images'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async uploadImages(establishmentId: string, image: Express.Multer.File) {
@@ -128,7 +177,8 @@ export class EstablishmentService {
 
       establishment.images = [...(establishment.images || []), savedImage];
       await this.establishmentRepository.save(establishment);
-
+      // Update completeness considering new image
+      await this.refreshCompleteness(establishmentId);
       return savedImage;
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -136,3 +186,4 @@ export class EstablishmentService {
     }
   }
 }
+

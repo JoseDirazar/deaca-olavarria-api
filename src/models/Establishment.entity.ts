@@ -11,35 +11,42 @@ export class Establishment extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
-  @Column()
+  @Column({ nullable: true })
   phone: string;
 
-  @Column()
+  @Column({ nullable: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   website: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
-  @Column()
+  @Column({ nullable: true })
   avatar: string;
 
-  @Column()
+  @Column({ nullable: true })
   instagram: string;
 
-  @Column()
+  @Column({ nullable: true })
   facebook: string;
 
-  @Column()
+  @Column({ nullable: true })
   latitude: string;
 
-  @Column()
+  @Column({ nullable: true })
   longitude: string;
+
+  @Column({ default: false })
+  verified: boolean;
+
+  // Se setea en true cuando el perfil tiene avatar y al menos 5 imágenes, y cumple con requisitos mínimos
+  @Column({ default: false })
+  isComplete: boolean;
 
   @OneToMany(() => Review, (review) => review.establishment, { cascade: true })
   reviewsReceived: Review[] | null;
@@ -58,3 +65,4 @@ export class Establishment extends BaseEntity {
   @ManyToOne(() => User, (user) => user.establishments, { cascade: true })
   user: User;
 }
+
