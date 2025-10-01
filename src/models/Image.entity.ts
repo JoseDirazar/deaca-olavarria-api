@@ -5,7 +5,7 @@ import { Establishment } from './Establishment.entity';
 @Entity()
 export class Image extends BaseEntity {
   @Column()
-  name: string;
+  fileName: string;
 
   @ManyToOne(() => Establishment, (establishment) => establishment.images)
   establishment: Establishment;

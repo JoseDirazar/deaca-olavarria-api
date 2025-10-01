@@ -6,6 +6,9 @@ import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pag
 import { EstablishmentDto } from './dto/establishment.dto';
 import { Image } from '@models/Image.entity';
 import { User } from '@models/User.entity';
+import { EstablishmentMapper } from './mapper/establishment-mapper';
+import path, { join } from 'path';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class EstablishmentService {
@@ -25,14 +28,15 @@ export class EstablishmentService {
     return hasAvatar && hasMinImages && hasCategory && hasSubcategory;
   }
 
-  private async refreshCompleteness(establishmentId: string): Promise<Establishment> {
+  async refreshCompleteness(establishmentId: string): Promise<boolean> {
     const establishment = await this.establishmentRepository.findOne({
       where: { id: establishmentId },
       relations: ['categories', 'subcategories', 'images'],
     });
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
     establishment.isComplete = this.computeIsComplete(establishment);
-    return await this.establishmentRepository.save(establishment);
+    await this.establishmentRepository.save(establishment);
+    return establishment.isComplete
   }
 
   async getPaginatedEstablishments(params: EstablishmentsPaginationQueryParamsDto) {
@@ -91,44 +95,33 @@ export class EstablishmentService {
       .getManyAndCount();
 
     return {
-      data: establishments,
-      meta: {
-        currentPage: page,
-        itemCount: establishments.length,
-        itemsPerPage: limit,
-        totalItems: total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      limit,
+      total,
+      establishments,
+      page
+    }
   }
 
-  async getEstablishmentById(id: string) {
-    const establishment = await this.establishmentRepository.findOne({
-      where: { id }, relations: [
+  getEstablishmentById(id: string) {
+    return this.establishmentRepository.findOne({
+      where: { id },
+      relations: [
         'categories',
         'subcategories',
         'reviewsReceived',
         'images',
       ]
     });
-    if (!establishment) return null;
-
-    return establishment;
   }
 
   async createEstablishment(establishmentDto: EstablishmentDto, user: User) {
     const establishment = this.establishmentRepository.create({ ...establishmentDto, user });
-    const created = await this.establishmentRepository.save(establishment);
-    // Refresh completeness after create (loads relations properly)
-    return await this.refreshCompleteness(created.id);
+    return await this.establishmentRepository.save(establishment);
   }
 
-  async updateEstablishment(id: string, establishmentDto: Partial<EstablishmentDto>) {
-    const establishment = await this.establishmentRepository.findOne({ where: { id } });
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    Object.assign(establishment, establishmentDto);
-    await this.establishmentRepository.save(establishment);
-    return await this.refreshCompleteness(id);
+  async updateEstablishment(establishment: Establishment, establishmentDto: EstablishmentDto) {
+    const updatedEstablishment = EstablishmentMapper.dtoToEstablishment(establishmentDto, establishment);
+    return await this.establishmentRepository.save(updatedEstablishment);
   }
 
   async deleteEstablishment(id: string) {
@@ -153,37 +146,35 @@ export class EstablishmentService {
     });
   }
 
-  async uploadImages(establishmentId: string, image: Express.Multer.File) {
+  async uploadImages(establishment: Establishment, images: Image[]) {
+    establishment.images = [...images];
+    return await this.establishmentRepository.save(establishment);
+  }
+
+  async updateAvatar(establishment: Establishment, newAvatarFilePath: string) {
+    await this.removeOldFileIfExist(newAvatarFilePath);
+    establishment.avatar = newAvatarFilePath;
+    return await this.establishmentRepository.save(establishment);
+  }
+
+
+
+  async removeOldFileIfExist(oldAvatarPath: string): Promise<boolean> {
     try {
-      if (!image) {
-        throw new BadRequestException('No se proporciono una imagen');
-      }
-
-      const establishment = await this.establishmentRepository.findOne({ where: { id: establishmentId } });
-      if (!establishment) {
-        throw new NotFoundException('Establecimiento no encontrado');
-      }
-
-      const imageEntity = this.imageRepository.create({
-        name: image.filename,
-        establishment: establishment,
-      });
-
-      const savedImage = await this.imageRepository.save(imageEntity);
-
-      if (!savedImage) {
-        throw new BadRequestException('No se pudo guardar la imagen');
-      }
-
-      establishment.images = [...(establishment.images || []), savedImage];
-      await this.establishmentRepository.save(establishment);
-      // Update completeness considering new image
-      await this.refreshCompleteness(establishmentId);
-      return savedImage;
+      const path = join(
+        process.cwd(),
+        'upload',
+        'establishment',
+        oldAvatarPath,
+      );
+      await fs.unlink(path);
+      return true;
     } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
+      // Log error pero continuar con la actualización
+      console.error('Error eliminando avatar anterior:', error);
+      return false;
     }
+
   }
 }
 

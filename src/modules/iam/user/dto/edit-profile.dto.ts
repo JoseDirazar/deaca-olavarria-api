@@ -3,7 +3,9 @@ import {
   Length,
   IsOptional,
   IsBoolean,
+  IsEnum,
 } from 'class-validator';
+import { Roles } from 'src/infrastructure/types/enums/Roles';
 
 export class EditProfileDto {
   @IsString()
@@ -40,9 +42,9 @@ export class EditProfileDto {
   @IsOptional()
   password?: string;
 
-  @IsString()
+  @IsEnum(Roles)
   @IsOptional()
-  role?: string;
+  role?: Roles;
 
   @IsString()
   @IsOptional()

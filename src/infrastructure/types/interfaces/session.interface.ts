@@ -1,9 +1,9 @@
 import { Session } from '@models/Session.entity';
 import { User } from '@models/User.entity';
 
-export interface validatedSession {
+export interface ValidatedSession {
   user: User;
-  sessionId: number;
+  sessionId: string;
 }
 
 export interface GoogleUser {
@@ -11,6 +11,7 @@ export interface GoogleUser {
 }
 
 export interface AccessRefreshTokenGenerated {
-  session: Session;
+  accessToken: string;
   refreshToken: string;
+  session: Session;
 }

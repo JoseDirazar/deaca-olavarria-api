@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, HttpException, HttpStatus, UnsupportedMediaTypeException, Post, NotFoundException, Query } from '@nestjs/common';
+import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, HttpException, HttpStatus, UnsupportedMediaTypeException, Post, NotFoundException, Query, BadRequestException, Req } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -11,6 +11,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesAllowed } from '../auth/decorators/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { GetUsersPaginatedQueryParamsDto } from './dto/get-users-paginated-query-params.dto';
+import { PaginatedResponse } from 'src/infrastructure/types/interfaces/pagination.interface';
+import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 export const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
 
 @Controller('user')
@@ -19,23 +21,33 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getProfile(@GetUser() user: User) {
-    return { ok: true, user };
+  async getProfile(@GetUser("id") id: string) {
+    const user = await this.userService.findById(id);
+    return { ok: true, data: user };
   }
 
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.ADMIN)
   @Get('')
-  getUsers(@Query() params: GetUsersPaginatedQueryParamsDto) {
-    return this.userService.getUsers(params).then((res) => ({ ok: true, ...res }));
+  async getUsers(@Query() params: GetUsersPaginatedQueryParamsDto): Promise<PaginatedResponse<User>> {
+    const { users, count, page, limit } = await this.userService.getUsers(params)
+    return {
+      data: users,
+      meta: {
+        itemCount: count,
+        itemsPerPage: limit,
+        currentPage: page,
+        totalItems: count,
+        totalPages: Math.ceil(count / limit)
+      }
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('')
-  async editProfile(@GetUser() user: User, @Body() editProfileDto: EditProfileDto) {
+  async editProfile(@GetUser() user: User, @Body() editProfileDto: EditProfileDto): Promise<ApiResponse<User>> {
     const usersaved = await this.userService.editProfile(user, editProfileDto);
-
-    return { ok: true, user: usersaved };
+    return { ok: true, data: usersaved };
   }
 
   @Put('avatar')
@@ -53,7 +65,7 @@ export class UserController {
         callback(null, true);
       },
       storage: diskStorage({
-        destination: './uploads/user/avatars/',
+        destination: './upload/user/avatar/',
         filename: (req, file, callback) => {
           const uniqueSuffix = uuid.v4();
           const extension = file.originalname.split('.').pop();
@@ -64,26 +76,26 @@ export class UserController {
     }),
   )
   async uploadFile(
-    @UploadedFile()
-    file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
     @GetUser('id') userId: string,
-  ) {
-    if (!file)
-      throw new HttpException('a file is required', HttpStatus.BAD_REQUEST);
+  ): Promise<ApiResponse<User>> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!file) throw new BadRequestException('No se envio un archivo');
 
     const newAvatar = file.filename;
-    const usersaved = await this.userService.changeAvatar(userId, newAvatar);
+    const usersaved = await this.userService.changeAvatar(user, newAvatar);
 
-    return { ok: true, user: usersaved };
+    return { ok: true, data: usersaved };
   }
 
   @Post('approve-establishment-owner')
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.ADMIN)
-  async approveEstablishmentOwner(@Body('userId') userId: string) {
-    const user = await this.userService.approveEstablishmentOwner(userId);
-    if (!user) return new NotFoundException('No se encontro el usuario');
-
-    return user;
+  async approveEstablishmentOwner(@Body('userId') userId: string): Promise<ApiResponse<User>> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    const userSaved = await this.userService.approveEstablishmentOwner(user);
+    return { ok: true, data: userSaved };
   }
 }

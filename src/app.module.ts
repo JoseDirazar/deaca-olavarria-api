@@ -22,17 +22,17 @@ const serveStaticOptions = {
     ConfigModule.forRoot(ConfigModuleOptions),
     JwtGlobalModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'uploads', 'users', 'avatars'),
-      serveRoot: '/users/avatar',
+      rootPath: join(__dirname, '..', '..', 'upload', 'user', 'avatar'),
+      serveRoot: '/user/avatar',
       serveStaticOptions,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'uploads', 'users', 'establishments'),
-      serveRoot: '/users/establishments',
+      rootPath: join(__dirname, '..', '..', 'upload', 'user', 'establishment'),
+      serveRoot: '/user/establishment',
       serveStaticOptions,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'uploads', 'assets'),
+      rootPath: join(__dirname, '..', '..', 'upload', 'assets'),
       serveRoot: '/assets',
       serveStaticOptions,
     }),

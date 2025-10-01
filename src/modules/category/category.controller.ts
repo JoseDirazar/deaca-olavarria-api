@@ -16,7 +16,7 @@ export class CategoryController {
 
     if (!categories) return new NotFoundException('No se encontraron categorias');
 
-    return { categories };
+    return { ok: true, data: categories };
   }
 
   @Get('subcategories')
@@ -25,7 +25,7 @@ export class CategoryController {
 
     if (!subcategories) return new NotFoundException('No se encontraron subcategorias');
 
-    return { subcategories };
+    return { ok: true, data: subcategories };
   }
 
   @Get(':id/subcategories')
@@ -34,7 +34,7 @@ export class CategoryController {
 
     if (!subcategories) return new NotFoundException('No se encontraron subcategorias');
 
-    return { subcategories };
+    return { ok: true, data: subcategories };
   }
 
   @Post('')
@@ -44,7 +44,7 @@ export class CategoryController {
     if (!name) return new BadRequestException('El nombre es requerido');
     const category = await this.categoryService.createCategory(name);
     if (!category) return new NotFoundException('No se encontro la categoria');
-    return { category };
+    return { ok: true, data: category };
   }
 
   @Post('subcategories')
@@ -55,7 +55,7 @@ export class CategoryController {
     if (!categoryId) return new BadRequestException('El id de la categoria es requerido');
     const subcategory = await this.categoryService.createSubcategory(name, categoryId);
     if (!subcategory) return new NotFoundException('No se encontro la subcategoria');
-    return { subcategory };
+    return { ok: true, data: subcategory };
   }
 
   @Put(':id')
@@ -63,7 +63,7 @@ export class CategoryController {
   @RolesAllowed(Roles.ADMIN)
   async updateCategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
     const category = await this.categoryService.updateCategory(id, name);
-    return { category };
+    return { ok: true, data: category };
   }
 
   @Put('subcategories/:id')
@@ -71,22 +71,22 @@ export class CategoryController {
   @RolesAllowed(Roles.ADMIN)
   async updateSubcategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
     const subcategory = await this.categoryService.updateSubcategory(id, name);
-    return { subcategory };
+    return { ok: true, data: subcategory };
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async deleteCategory(@Param() { id }: UUIDParamDto) {
-    const category = await this.categoryService.deleteCategory(id);
-    return { category };
+    this.categoryService.deleteCategory(id);
+    return { ok: true };
   }
 
   @Delete('subcategories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  async deleteSubcategory(@Param() { id }: UUIDParamDto) {
-    const subcategory = await this.categoryService.deleteSubcategory(id);
-    return { subcategory };
+  deleteSubcategory(@Param() { id }: UUIDParamDto) {
+    this.categoryService.deleteSubcategory(id);
+    return { ok: true };
   }
 }

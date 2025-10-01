@@ -3,7 +3,7 @@ import { Session } from "inspector";
 
 export class ValidatedSession {
   user: User;
-  sessionId: number;
+  sessionId: string;
 }
 
 export interface IGoogleUser {
