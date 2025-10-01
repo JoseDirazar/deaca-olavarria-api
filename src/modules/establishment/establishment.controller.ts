@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpException, HttpStatus, NotFoundException, Param, Post, Put, Query, UnsupportedMediaTypeException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Put, Query, UnsupportedMediaTypeException, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { EstablishmentService } from './establishment.service';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
@@ -110,7 +110,7 @@ export class EstablishmentController {
         callback(null, true);
       },
       storage: diskStorage({
-        destination: './upload/establishment/',
+        destination: './upload/user/establishment/',
         filename: (req, file, callback) => {
           const uniqueSuffix = uuid.v4();
           const extension = file.originalname.split('.').pop();
@@ -148,7 +148,7 @@ export class EstablishmentController {
         callback(null, true);
       },
       storage: diskStorage({
-        destination: './upload/establishment/',
+        destination: './upload/user/establishment/',
         filename: (req, file, callback) => {
           const uniqueSuffix = uuid.v4();
           const extension = file.originalname.split('.').pop();
@@ -160,18 +160,16 @@ export class EstablishmentController {
   )
   async uploadEstablishmentImages(
     @Param('id') id: string,
-    @UploadedFile() files: Express.Multer.File[],
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
+    console.log("FILES", files)
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    if (!files) throw new BadRequestException('No se envio un archivo');
-    const images = files.map((file) => {
-      const newImage = new Image();
-      newImage.fileName = file.filename;
-      newImage.establishment = establishment;
-      return newImage;
-    })
-    const updatedEstablishment = await this.establishmentService.uploadImages(establishment, images);
+    if (!files || files.length === 0) throw new BadRequestException('No se enviaron archivos');
+
+    // Solo pasar los nombres de archivo
+    const fileNames = files.map((file) => file.filename);
+    const updatedEstablishment = await this.establishmentService.uploadImages(establishment, fileNames);
     return { ok: true, data: updatedEstablishment };
   }
 

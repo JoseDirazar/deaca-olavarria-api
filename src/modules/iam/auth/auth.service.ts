@@ -55,8 +55,7 @@ export class AuthService {
       secret: this.configService.get<string>('session.secretKeyRefresh'),
       expiresIn: this.configService.get<string>('session.jwtTokenRefreshExpiration'),
     });
-    console.log("accessToken SERVICE", accessToken);
-    console.log("refreshToken SERVICE", refreshToken);
+
 
     return { accessToken, refreshToken };
   }
@@ -99,7 +98,6 @@ export class AuthService {
       const data = this.jwtService.verify(accessToken, {
         secret: this.configService.get<string>('session.secretKey'),
       });
-      console.log("accessToken validateAccessToken", data);
       return data;
     } catch (e) {
       if (e instanceof TokenExpiredError) throw new UnauthorizedException('El token ha caducado');

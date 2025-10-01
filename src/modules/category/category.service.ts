@@ -9,10 +9,10 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category) private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Subcategory) private readonly subcategoryRepository: Repository<Subcategory>,
-  ) {}
+  ) { }
 
   async getCategories() {
-    return await this.categoryRepository.find();
+    return await this.categoryRepository.find({ relations: ['subcategories'] });
   }
 
   async getSubcategories() {

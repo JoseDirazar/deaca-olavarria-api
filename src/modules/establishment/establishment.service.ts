@@ -146,9 +146,24 @@ export class EstablishmentService {
     });
   }
 
-  async uploadImages(establishment: Establishment, images: Image[]) {
-    establishment.images = [...images];
-    return await this.establishmentRepository.save(establishment);
+  async uploadImages(establishment: Establishment, fileNames: string[]) {
+    // Crear las entidades Image correctamente
+    const images = fileNames.map((fileName) => {
+      const image = this.imageRepository.create({
+        fileName,
+        establishment,
+      });
+      return image;
+    });
+    
+    // Guardar las imágenes primero
+    const savedImages = await this.imageRepository.save(images);
+    
+    // Recargar el establishment con las imágenes actualizadas
+    return await this.establishmentRepository.findOne({
+      where: { id: establishment.id },
+      relations: ['categories', 'subcategories', 'images'],
+    });
   }
 
   async updateAvatar(establishment: Establishment, newAvatarFilePath: string) {

@@ -156,7 +156,6 @@ export class UserService {
     }
 
     user.avatar = newAvatarFilePath;
-    console.log("updatedUserAvatar", user.avatar)
     return this.userRepository.save(user);
   }
 

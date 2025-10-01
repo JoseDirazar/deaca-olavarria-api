@@ -1,6 +1,5 @@
 import { Category } from "@models/Category.entity";
 import { Subcategory } from "@models/Subcategory.entity";
-import { Image } from "@models/Image.entity";
 import { IsArray, IsNotEmpty, IsString } from "class-validator";
 
 export class EstablishmentDto {
