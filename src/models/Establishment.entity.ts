@@ -59,7 +59,7 @@ export class Establishment extends BaseEntity {
   @JoinTable()
   subcategories: Subcategory[];
 
-  @OneToMany(() => Image, (image) => image.establishment, { cascade: true })
+  @OneToMany(() => Image, (image) => image.establishment, { cascade: true, onDelete: 'CASCADE' })
   images: Image[] | null;
 
   @ManyToOne(() => User, (user) => user.establishments, { cascade: true })

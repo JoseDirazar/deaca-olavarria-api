@@ -81,7 +81,11 @@ export class EstablishmentController {
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Delete(':id')
   async deleteMyEstablishment(@Param('id') id: string) {
-    return await this.establishmentService.deleteEstablishment(id);
+    const establishmentToDelete = await this.establishmentService.getEstablishmentById(id);
+    if (!establishmentToDelete) throw new NotFoundException('No se encontro el establecimiento');
+    
+    const result = await this.establishmentService.deleteEstablishment(establishmentToDelete);
+    return { ok: true, data: result };
   }
 
   // Admin verify toggle

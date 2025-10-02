@@ -102,7 +102,7 @@ export class EstablishmentService {
     }
   }
 
-  getEstablishmentById(id: string) {
+  async getEstablishmentById(id: string) {
     return this.establishmentRepository.findOne({
       where: { id },
       relations: [
@@ -110,6 +110,7 @@ export class EstablishmentService {
         'subcategories',
         'reviewsReceived',
         'images',
+        'user'
       ]
     });
   }
@@ -124,11 +125,33 @@ export class EstablishmentService {
     return await this.establishmentRepository.save(updatedEstablishment);
   }
 
-  async deleteEstablishment(id: string) {
-    const establishment = await this.establishmentRepository.findOne({ where: { id } });
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    await this.establishmentRepository.remove(establishment);
-    return { ok: true };
+  async deleteEstablishment(establishment: Establishment) {
+    // Eliminar archivos físicos de las imágenes
+    if (establishment.images && establishment.images.length > 0) {
+      for (const image of establishment.images) {
+        try {
+          const imagePath = join('./upload/user/establishment/', image.fileName);
+          await fs.unlink(imagePath);
+        } catch (error) {
+          console.error(`Error al eliminar imagen ${image.fileName}:`, error);
+        }
+      }
+      // Eliminar registros de imágenes de la BD
+      await this.imageRepository.remove(establishment.images);
+    }
+    
+    // Eliminar archivo físico del avatar
+    if (establishment.avatar) {
+      try {
+        const avatarPath = join('./upload/user/establishment/', establishment.avatar);
+        await fs.unlink(avatarPath);
+      } catch (error) {
+        console.error(`Error al eliminar avatar ${establishment.avatar}:`, error);
+      }
+    }
+    
+    // Ahora eliminar el establecimiento
+    return await this.establishmentRepository.remove(establishment);
   }
 
   async setVerified(id: string, verified: boolean) {
@@ -155,10 +178,10 @@ export class EstablishmentService {
       });
       return image;
     });
-    
+
     // Guardar las imágenes primero
     const savedImages = await this.imageRepository.save(images);
-    
+
     // Recargar el establishment con las imágenes actualizadas
     return await this.establishmentRepository.findOne({
       where: { id: establishment.id },
