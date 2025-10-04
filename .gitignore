@@ -58,7 +58,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /postgresDb
 /db-entrypoint
 
-uploads/**/*.jpg
-uploads/**/*.jpeg
-uploads/**/*.png
-uploads/**/*.gif
+# Ignore all files inside upload folder except index.html
+upload/user/**/*.*
+!upload/user/**/*.html

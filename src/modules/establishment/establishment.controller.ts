@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Put, Query, UnsupportedMediaTypeException, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, UnsupportedMediaTypeException, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { EstablishmentService } from './establishment.service';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
@@ -12,10 +12,8 @@ import { RolesAllowed } from '@modules/iam/auth/decorators/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { Patch, Delete } from '@nestjs/common';
 import { User } from '@models/User.entity';
-import { UUIDParamDto } from 'src/infrastructure/dto/uuid-param.dto';
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 import { Establishment } from '@models/Establishment.entity';
-import { Image } from '@models/Image.entity';
 
 @Controller('establishment')
 export class EstablishmentController {
@@ -50,7 +48,7 @@ export class EstablishmentController {
   }
 
   @Get(':id')
-  async getEstablishmentById(@Param('id') { id }: UUIDParamDto) {
+  async getEstablishmentById(@Param('id', new ParseUUIDPipe()) id: string) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) return new NotFoundException('No se encontro el establecimiento');
     return { ok: true, data: establishment };
@@ -69,7 +67,7 @@ export class EstablishmentController {
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Put(':id')
-  async updateMyEstablishment(@Param('id') id: string, @Body() establishmentDto: EstablishmentDto) {
+  async updateMyEstablishment(@Param('id', new ParseUUIDPipe()) id: string, @Body() establishmentDto: EstablishmentDto) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) return new NotFoundException('No se encontro el establecimiento');
 
@@ -80,10 +78,10 @@ export class EstablishmentController {
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Delete(':id')
-  async deleteMyEstablishment(@Param('id') id: string) {
+  async deleteMyEstablishment(@Param('id', new ParseUUIDPipe()) id: string) {
     const establishmentToDelete = await this.establishmentService.getEstablishmentById(id);
     if (!establishmentToDelete) throw new NotFoundException('No se encontro el establecimiento');
-    
+
     const result = await this.establishmentService.deleteEstablishment(establishmentToDelete);
     return { ok: true, data: result };
   }

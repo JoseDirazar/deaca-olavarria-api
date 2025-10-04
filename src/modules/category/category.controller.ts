@@ -1,6 +1,5 @@
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { UUIDParamDto } from 'src/infrastructure/dto/uuid-param.dto';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
 import { RolesAllowed } from '@modules/iam/auth/decorators/roles.decorator';
@@ -29,7 +28,7 @@ export class CategoryController {
   }
 
   @Get(':id/subcategories')
-  async getSubcategoriesByCategory(@Param() { id }: UUIDParamDto) {
+  async getSubcategoriesByCategory(@Param('id', new ParseUUIDPipe()) id: string) {
     const subcategories = await this.categoryService.getSubcategoriesByCategory(id);
 
     if (!subcategories) return new NotFoundException('No se encontraron subcategorias');
@@ -61,7 +60,7 @@ export class CategoryController {
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  async updateCategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
+  async updateCategory(@Param('id', new ParseUUIDPipe()) id: string, @Body() { name }: { name: string }) {
     const category = await this.categoryService.updateCategory(id, name);
     return { ok: true, data: category };
   }
@@ -69,7 +68,7 @@ export class CategoryController {
   @Put('subcategories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  async updateSubcategory(@Param() { id }: UUIDParamDto, @Body() { name }: { name: string }) {
+  async updateSubcategory(@Param('id', new ParseUUIDPipe()) id: string, @Body() { name }: { name: string }) {
     const subcategory = await this.categoryService.updateSubcategory(id, name);
     return { ok: true, data: subcategory };
   }
@@ -77,7 +76,7 @@ export class CategoryController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  async deleteCategory(@Param() { id }: UUIDParamDto) {
+  async deleteCategory(@Param('id', new ParseUUIDPipe()) id: string) {
     this.categoryService.deleteCategory(id);
     return { ok: true };
   }
@@ -85,7 +84,7 @@ export class CategoryController {
   @Delete('subcategories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  deleteSubcategory(@Param() { id }: UUIDParamDto) {
+  deleteSubcategory(@Param('id', new ParseUUIDPipe()) id: string) {
     this.categoryService.deleteSubcategory(id);
     return { ok: true };
   }
