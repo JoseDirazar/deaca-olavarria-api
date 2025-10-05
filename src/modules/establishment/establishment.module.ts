@@ -10,10 +10,11 @@ import { UserService } from '@modules/iam/user/user.service';
 import { User } from '@models/User.entity';
 import { EmailModule } from '@modules/email/email.module';
 import { EmailService } from '@modules/email/email.service';
+import { Review } from '@models/Review.entity';
 
 @Module({
   controllers: [EstablishmentController],
   providers: [EstablishmentService, UserService, EmailService],
-  imports: [TypeOrmModule.forFeature([Establishment, Image, User]), AuthModule, UserModule, EmailModule],
+  imports: [TypeOrmModule.forFeature([Establishment, Image, User, Review]), AuthModule, UserModule, EmailModule],
 })
 export class EstablishmentModule { }

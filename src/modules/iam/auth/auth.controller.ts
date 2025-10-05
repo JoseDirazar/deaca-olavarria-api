@@ -100,19 +100,21 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('sign-out')
-  signOut(@GetSessionId() sessionId: string): ApiResponse<void> {
+  async signOut(@GetSessionId() sessionId: string): Promise<ApiResponse<void>> {
     if (!sessionId) throw new BadRequestException('Session id is required');
-    this.authService.signOut(sessionId);
+    const session = await this.authService.getSession(sessionId);
+    if (!session) throw new UnauthorizedException('Unauthorized');
+    await this.authService.deleteSession(sessionId);
     return { ok: true };
   }
 
   @Public()
   @Post('confirm-email')
   async confirmEmail(@Body() dto: VerifyEmailDto): Promise<ApiResponse<User>> {
-
     const user = await this.userService.getVerificationCode(dto.email);
     if (!user) throw new NotFoundException('User not found');
     if (user.emailCode !== dto.emailCode) throw new NotFoundException('Email code not valid');
+
     const updatedUser = await this.userService.verifyEmailAndResetEmailCode(user);
     this.userService.editProfile(user, updatedUser);
     return { ok: true, data: updatedUser };

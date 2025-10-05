@@ -132,7 +132,11 @@ export class AuthService {
   }
 
 
-  async signOut(sessionId: string) {
-    await this.sessionService.removeSession(sessionId);
+  async getSession(sessionId: string) {
+    return await this.sessionService.findByIds(sessionId);
+  }
+
+  async deleteSession(sessionId: string) {
+    return await this.sessionService.removeSession(sessionId);
   }
 }

@@ -1,5 +1,5 @@
 import { Establishment } from '@models/Establishment.entity';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
@@ -7,8 +7,10 @@ import { EstablishmentDto } from './dto/establishment.dto';
 import { Image } from '@models/Image.entity';
 import { User } from '@models/User.entity';
 import { EstablishmentMapper } from './mapper/establishment-mapper';
-import path, { join } from 'path';
+import { join } from 'path';
 import * as fs from 'fs/promises';
+import { Review } from '@models/Review.entity';
+import { ReviewDto } from './dto/review.dto';
 
 @Injectable()
 export class EstablishmentService {
@@ -17,6 +19,8 @@ export class EstablishmentService {
     private readonly establishmentRepository: Repository<Establishment>,
     @InjectRepository(Image)
     private readonly imageRepository: Repository<Image>,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
   ) { }
 
   private computeIsComplete(est: Establishment): boolean {
@@ -54,7 +58,6 @@ export class EstablishmentService {
       .leftJoinAndSelect('establishments.categories', 'categories')
       .leftJoinAndSelect('establishments.subcategories', 'subcategories');
 
-    // Usar EXISTS en lugar de JOIN directo para filtros
     if (subcategories) {
       establishmentsQueryBuilder.andWhere(
         'EXISTS (SELECT 1 FROM establishments_subcategories_subcategories ess ' +
@@ -80,7 +83,6 @@ export class EstablishmentService {
       establishmentsQueryBuilder.andWhere('establishments.address ILIKE :address', { address: `%${address}%` });
     }
 
-    // Sorting whitelist to avoid SQL injection
     const sortWhitelist: Record<string, string> = {
       name: 'establishments.name',
       address: 'establishments.address',
@@ -108,7 +110,6 @@ export class EstablishmentService {
       relations: [
         'categories',
         'subcategories',
-        'reviewsReceived',
         'images',
         'user'
       ]
@@ -126,7 +127,6 @@ export class EstablishmentService {
   }
 
   async deleteEstablishment(establishment: Establishment) {
-    // Eliminar archivos físicos de las imágenes
     if (establishment.images && establishment.images.length > 0) {
       for (const image of establishment.images) {
         try {
@@ -136,11 +136,9 @@ export class EstablishmentService {
           console.error(`Error al eliminar imagen ${image.fileName}:`, error);
         }
       }
-      // Eliminar registros de imágenes de la BD
       await this.imageRepository.remove(establishment.images);
     }
-    
-    // Eliminar archivo físico del avatar
+
     if (establishment.avatar) {
       try {
         const avatarPath = join('./upload/user/establishment/', establishment.avatar);
@@ -149,8 +147,7 @@ export class EstablishmentService {
         console.error(`Error al eliminar avatar ${establishment.avatar}:`, error);
       }
     }
-    
-    // Ahora eliminar el establecimiento
+
     return await this.establishmentRepository.remove(establishment);
   }
 
@@ -170,7 +167,6 @@ export class EstablishmentService {
   }
 
   async uploadImages(establishment: Establishment, fileNames: string[]) {
-    // Crear las entidades Image correctamente
     const images = fileNames.map((fileName) => {
       const image = this.imageRepository.create({
         fileName,
@@ -179,10 +175,7 @@ export class EstablishmentService {
       return image;
     });
 
-    // Guardar las imágenes primero
-    const savedImages = await this.imageRepository.save(images);
-
-    // Recargar el establishment con las imágenes actualizadas
+    await this.imageRepository.save(images);
     return await this.establishmentRepository.findOne({
       where: { id: establishment.id },
       relations: ['categories', 'subcategories', 'images'],
@@ -194,8 +187,6 @@ export class EstablishmentService {
     establishment.avatar = newAvatarFilePath;
     return await this.establishmentRepository.save(establishment);
   }
-
-
 
   async removeOldFileIfExist(oldAvatarPath: string): Promise<boolean> {
     try {
@@ -212,7 +203,69 @@ export class EstablishmentService {
       console.error('Error eliminando avatar anterior:', error);
       return false;
     }
+  }
 
+  async getReviewsByEstablishmentId(id: string) {
+    return await this.reviewRepository.find({
+      where: { establishment: { id } },
+      relations: ['reviewer'],
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        reviewer: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          avatar: true
+        },
+        establishment: {
+          id: true,
+        }
+      }
+    });
+  }
+
+  async createReview(user: User, establishment: Establishment, reviewDto: ReviewDto) {
+    const review = this.reviewRepository.create({
+      ...reviewDto,
+      establishment,
+      reviewer: user,
+    });
+    const reviewCreated = await this.reviewRepository.save(review);
+    const loadedReview = await this.getReviewById(reviewCreated.id);
+    await this.updateEstablishmentRating(establishment);
+    return loadedReview;
+  }
+
+  async updateReview(review: Review, reviewDto: ReviewDto, establishment: Establishment) {
+    review.rating = reviewDto.rating;
+    review.comment = reviewDto.comment;
+    const reviewUpdated = await this.reviewRepository.save(review);
+    const loadedReview = await this.getReviewById(reviewUpdated.id);
+    await this.updateEstablishmentRating(establishment);
+    return loadedReview;
+  }
+
+  async deleteReview(review: Review, establishment: Establishment) {
+    const reviewDeleted = await this.reviewRepository.remove(review);
+    const loadedReview = await this.getReviewById(reviewDeleted.id);
+    await this.updateEstablishmentRating(establishment);
+    return loadedReview;
+  }
+
+  async getReviewById(id: string) {
+    return await this.reviewRepository.findOne({ where: { id }, relations: ['reviewer', 'establishment'] });
+  }
+
+  private async updateEstablishmentRating(establishment: Establishment) {
+    const reviews = await this.reviewRepository.find({
+      where: { establishment: { id: establishment.id } },
+    });
+    const totalRatings = reviews.reduce((acc, review) => acc + review.rating, 0);
+    establishment.rating = reviews.length === 0 ? 0 : totalRatings / reviews.length;
+    await this.establishmentRepository.save(establishment);
+    return establishment;
   }
 }
-

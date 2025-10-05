@@ -44,9 +44,11 @@ export class Establishment extends BaseEntity {
   @Column({ default: false })
   verified: boolean;
 
-  // Se setea en true cuando el perfil tiene avatar y al menos 5 imágenes, y cumple con requisitos mínimos
   @Column({ default: false })
   isComplete: boolean;
+
+  @Column({ nullable: true })
+  rating: number;
 
   @OneToMany(() => Review, (review) => review.establishment, { cascade: true })
   reviewsReceived: Review[] | null;
