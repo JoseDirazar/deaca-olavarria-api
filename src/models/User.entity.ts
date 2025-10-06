@@ -5,7 +5,7 @@ import { Session } from './Session.entity';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { Review } from './Review.entity';
 import { Establishment } from './Establishment.entity';
-import { hash } from 'bcrypt';
+import * as argon2 from 'argon2';
 
 @Entity()
 export class User extends BaseEntity {
@@ -52,6 +52,6 @@ export class User extends BaseEntity {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
-    this.password = await hash(this.password, 10);
+    this.password = await argon2.hash(this.password);
   }
 }

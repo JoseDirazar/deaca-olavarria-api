@@ -14,15 +14,20 @@ import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './strategies/local.strategy';
 import jwtConfig from 'src/config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import refreshJwtConfig from 'src/config/refresh-jwt.config';
+import { RefreshJwtStrategy } from './strategies/refresh.strategy';
+import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
     TypeOrmModule.forFeature([User, Session]),
     JwtModule.registerAsync(jwtConfig.asProvider()),
-    ConfigModule.forFeature(jwtConfig)
+    ConfigModule.forFeature(jwtConfig),
+    ConfigModule.forFeature(refreshJwtConfig)
   ],
-  providers: [UserService, AuthService, SessionService, EmailService, JwtAuthGuard, RolesGuard, LocalStrategy],
+  providers: [UserService, AuthService, SessionService, EmailService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
 })

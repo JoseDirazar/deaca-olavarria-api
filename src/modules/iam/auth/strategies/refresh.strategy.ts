@@ -11,7 +11,7 @@ import { AuthService } from "../auth.service";
 export class RefreshJwtStrategy extends PassportStrategy(Strategy, "refresh-jwt") {
     constructor(@Inject(refreshJwtConfig.KEY) private refreshJwtConfiguration: ConfigType<typeof refreshJwtConfig>, private authService: AuthService) {
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            jwtFromRequest: ExtractJwt.fromExtractors([(req: Request) => req?.cookies?.["refresh_token"] || null]),
             secretOrKey: refreshJwtConfiguration.secret!,
             ignoreExpiration: false,
             passReqToCallback: true,
@@ -19,7 +19,7 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, "refresh-jwt"
     }
 
     validate(req: Request, payload: AuthJwtPayload) {
-        const refreshToken = req.get("authorization")?.replace("Bearer ", "").trim();
+        const refreshToken = req.cookies?.["refresh_token"] as string | undefined;
         if (!refreshToken) throw new UnauthorizedException("Refresh token not found");
         const sessionId = payload.sessionId;
         return this.authService.validateRefreshTokenV2(sessionId, refreshToken);

@@ -37,6 +37,7 @@ export class SessionService {
   async findOne(sessionId: string): Promise<Session | null> {
     return this.sessionRepository.findOne({
       where: { id: sessionId },
+      relations: ['user'],
     });
   }
 

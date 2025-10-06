@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, HttpCode, HttpStatus, NotFoundException, Post, Req, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, HttpCode, HttpStatus, NotFoundException, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -33,15 +34,14 @@ export class AuthController {
 
   @Public()
   @Post('sign-up')
-  async createUser(@Req() req: Request, @Body() { email, password, firstName, lastName }: SignUpDto): Promise<ApiResponse<{ user: User }>> {
+  async createUser(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() { email, password, firstName, lastName }: SignUpDto) {
     if (!email || !password) throw new BadRequestException('Email y password son obligatorios');
     const userExist = await this.userService.userExistByEmail(email);
-    if (userExist) throw new NotFoundException('El usuario ya existe');
 
     const user = await this.userService.createUser({ email, password, firstName, lastName });
-    // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(req, user);
-
-    return { ok: true, data: { user } };
+    const { accessToken, refreshToken, sessionId } = await this.authService.generateAccessAndRefreshToken(req, user);
+    res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    return { ok: true, data: { accessToken, sessionId } };
   }
 
   @Public()
@@ -53,18 +53,19 @@ export class AuthController {
   ) {
     const userWithPassword = await this.userService.findByEmailWithPassword(signInDto.email);
     if (!userWithPassword) throw new NotFoundException('User not found');
-    if (!compare(signInDto.password, userWithPassword?.password ?? "")) throw new UnauthorizedException('Contraseña no válida.');
-    // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, userWithPassword);
-    const { password, ...user } = userWithPassword;
+    if (!(await compare(signInDto.password, userWithPassword?.password ?? ""))) throw new UnauthorizedException('Contraseña no válida.');
+    const { password, ...user } = userWithPassword as any;
     await this.userService.updateLastLogin(userWithPassword);
-    return { ok: true, data: { user } };
+    const { accessToken, refreshToken, sessionId } = await this.authService.generateAccessAndRefreshToken(request, user);
+    request.res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    return { ok: true, data: { accessToken, sessionId } };
   }
 
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('google-auth')
   async signInWithGoogle(
-    @Body() logInWithGoogleDto: SignInWithGoogleDto,
+{{ ... }}
     @Req()
     request: Request,
   ) {
@@ -83,21 +84,7 @@ export class AuthController {
     return { ok: true, data: { user: userUpdated } };
   }
 
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Post('refresh-accesstoken')
-  async refreshAcessToken(@Body() refreshTokenDto: RefreshTokenDto, @GetSessionId() sessionId: string): Promise<ApiResponse<{ accessToken: string, refreshToken: string }>> {
-    await this.sessionService.removeSession(sessionId);
-
-    const newTokens = await this.authService.validateRefreshToken(refreshTokenDto.refreshToken);
-    if (!newTokens) throw new UnauthorizedException({ message: 'Refresh token no valido', });
-
-    const session = await this.sessionService.findOne(newTokens.sessionId);
-    if (!session) throw new UnauthorizedException({ message: 'Unauthorized' });
-
-    const { accessToken, refreshToken } = await this.authService.refreshAccessToken({ user: newTokens.user, sessionId: newTokens.sessionId });
-    return { ok: true, data: { accessToken, refreshToken } };
-  }
+  // Legacy refresh-accesstoken endpoint removed in favor of /auth/refresh with RefreshAuthGuard
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -155,8 +142,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req) {
-    return this.authService.login(req.user.id);
+  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, refreshToken, id: sessionId } = await this.authService.login(req, (req as any).user.id);
+    res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    return { ok: true, data: { accessToken, sessionId } };
   }
 
   @Post('refresh')
@@ -167,7 +156,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@GetSessionId() sessionId: string) {
+  async logout(@GetSessionId() sessionId: string, @Res({ passthrough: true }) res: Response) {
+    res.clearCookie('refresh_token', { path: '/' });
     return this.authService.logout(sessionId);
   }
 }

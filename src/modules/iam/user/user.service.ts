@@ -67,16 +67,13 @@ export class UserService {
 
   async createUser(dto: SignUpDto): Promise<User> {
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(dto.password, salt);
-
     const randomNumber = Math.floor(Math.random() * 100000);
     const emailVerificationCode = randomNumber.toString().padStart(5, '0');
 
     const response = await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
     const user = new User();
     user.email = dto.email;
-    user.password = hashedPassword;
+    user.password = dto.password;
     user.role = Roles.USER;
     user.emailCode = emailVerificationCode;
     user.emailCodeCreatedAt = new Date();
@@ -88,12 +85,9 @@ export class UserService {
 
   // Used in loadDataByDefault ONLY
   async createUserAdmin(email: string, password: string): Promise<User> {
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     const user = new User();
     user.email = email;
-    user.password = hashedPassword;
+    user.password = password;
     user.role = Roles.ADMIN;
     const savedUser = await this.userRepository.save(user);
     return savedUser;
