@@ -10,14 +10,19 @@ import { User } from '@models/User.entity';
 import { EmailService } from '@modules/email/email.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { JwtModule } from '@nestjs/jwt';
+import { LocalStrategy } from './strategies/local.strategy';
+import jwtConfig from 'src/config/jwt.config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
-
     TypeOrmModule.forFeature([User, Session]),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
+    ConfigModule.forFeature(jwtConfig)
   ],
-  providers: [UserService, AuthService, SessionService, EmailService, JwtAuthGuard, RolesGuard],
+  providers: [UserService, AuthService, SessionService, EmailService, JwtAuthGuard, RolesGuard, LocalStrategy],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
 })

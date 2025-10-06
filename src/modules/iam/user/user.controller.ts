@@ -21,7 +21,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getProfile(@GetUser("id") id: string) {
+  async me(@GetUser("id") id: string) {
     const user = await this.userService.findById(id);
     return { ok: true, data: user };
   }
@@ -97,5 +97,11 @@ export class UserController {
     if (!user) throw new NotFoundException('Usuario no encontrado');
     const userSaved = await this.userService.approveEstablishmentOwner(user);
     return { ok: true, data: userSaved };
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req) {
+    return await this.userService.findById(req.user.id);
   }
 }

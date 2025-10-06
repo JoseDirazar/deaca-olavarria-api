@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, NotFoundException, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, HttpCode, HttpStatus, NotFoundException, Post, Req, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -14,9 +14,13 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 import { User } from '@models/User.entity';
 import { UserService } from '../user/user.service';
-import * as bcrypt from 'bcrypt';
 import { TokenPayload } from 'google-auth-library';
 import { SessionService } from './session.service';
+import { compare } from 'bcrypt';
+import { AuthGuard } from '@nestjs/passport';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { RefreshAuthGuard } from './guards/refresh-auth.guard';
+import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 
 
 @Controller('auth')
@@ -29,45 +33,41 @@ export class AuthController {
 
   @Public()
   @Post('sign-up')
-  async createUser(@Req() req: Request, @Body() dto: SignUpDto): Promise<ApiResponse<{ accessToken: string, refreshToken: string }>> {
-    if (!dto.email || !dto.password) throw new BadRequestException('Email y password son obligatorios');
-    const userExist = await this.userService.userExistByEmail(dto.email);
+  async createUser(@Req() req: Request, @Body() { email, password, firstName, lastName }: SignUpDto): Promise<ApiResponse<{ user: User }>> {
+    if (!email || !password) throw new BadRequestException('Email y password son obligatorios');
+    const userExist = await this.userService.userExistByEmail(email);
     if (userExist) throw new NotFoundException('El usuario ya existe');
 
-    const user = await this.userService.createUser(dto);
-    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(req, user);
+    const user = await this.userService.createUser({ email, password, firstName, lastName });
+    // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(req, user);
 
-    return { ok: true, data: { accessToken, refreshToken } };
+    return { ok: true, data: { user } };
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('sign-in')
   async signIn(
     @Body() signInDto: SignInDto,
     @Req() request: Request,
-  ): Promise<ApiResponse<{ accessToken: string, refreshToken: string, user: User }>> {
-    const user = await this.userService.userExistByEmail(signInDto.email);
-
-    if (!user) throw new NotFoundException('User not found');
-
-    const userPassword = await this.userService.findByEmailWithPassword(signInDto.email);
-
-    if (!userPassword) throw new UnauthorizedException('Contraseña no válida.');
-    if (!bcrypt.compareSync(signInDto.password, userPassword)) throw new UnauthorizedException('Contraseña no válida.');
-
-    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, user);
-
-    await this.userService.updateLastLogin(user);
-    return { ok: true, data: { accessToken, refreshToken, user } };
+  ) {
+    const userWithPassword = await this.userService.findByEmailWithPassword(signInDto.email);
+    if (!userWithPassword) throw new NotFoundException('User not found');
+    if (!compare(signInDto.password, userWithPassword?.password ?? "")) throw new UnauthorizedException('Contraseña no válida.');
+    // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, userWithPassword);
+    const { password, ...user } = userWithPassword;
+    await this.userService.updateLastLogin(userWithPassword);
+    return { ok: true, data: { user } };
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('google-auth')
   async signInWithGoogle(
     @Body() logInWithGoogleDto: SignInWithGoogleDto,
     @Req()
     request: Request,
-  ): Promise<ApiResponse<{ accessToken: string, refreshToken: string, user: User }>> {
+  ) {
     const googleUser: TokenPayload = await this.authService.getUserWithGoogleTokens(logInWithGoogleDto.accessToken);
     if (!googleUser.email) throw new BadRequestException('Access token no valido');
     let user = await this.userService.userExistByEmail(googleUser.email);
@@ -78,12 +78,13 @@ export class AuthController {
     }
     const userUpdated = await this.userService.editProfile(user, googleUser);
 
-    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, userUpdated);
+    // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, userUpdated);
     await this.userService.updateLastLogin(user);
-    return { ok: true, data: { accessToken, refreshToken, user: userUpdated } };
+    return { ok: true, data: { user: userUpdated } };
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('refresh-accesstoken')
   async refreshAcessToken(@Body() refreshTokenDto: RefreshTokenDto, @GetSessionId() sessionId: string): Promise<ApiResponse<{ accessToken: string, refreshToken: string }>> {
     await this.sessionService.removeSession(sessionId);
@@ -91,7 +92,7 @@ export class AuthController {
     const newTokens = await this.authService.validateRefreshToken(refreshTokenDto.refreshToken);
     if (!newTokens) throw new UnauthorizedException({ message: 'Refresh token no valido', });
 
-    const session = await this.sessionService.findById(newTokens.sessionId);
+    const session = await this.sessionService.findOne(newTokens.sessionId);
     if (!session) throw new UnauthorizedException({ message: 'Unauthorized' });
 
     const { accessToken, refreshToken } = await this.authService.refreshAccessToken({ user: newTokens.user, sessionId: newTokens.sessionId });
@@ -99,6 +100,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('sign-out')
   async signOut(@GetSessionId() sessionId: string): Promise<ApiResponse<void>> {
     if (!sessionId) throw new BadRequestException('Session id is required');
@@ -109,6 +111,7 @@ export class AuthController {
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('confirm-email')
   async confirmEmail(@Body() dto: VerifyEmailDto): Promise<ApiResponse<User>> {
     const user = await this.userService.getVerificationCode(dto.email);
@@ -121,6 +124,7 @@ export class AuthController {
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('request-password-reset')
   async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto): Promise<ApiResponse<void>> {
     const user = await this.userService.getUserWithUnselectableFields(requestPasswordResetDto.email);
@@ -135,7 +139,7 @@ export class AuthController {
   async resetPassword(
     @Req() req: Request,
     @Body() dto: ResetPasswordDto,
-  ): Promise<ApiResponse<{ accessToken: string, refreshToken: string, user: User }>> {
+  ) {
     const existingUser = await this.userService.getResssetCodeAndPassword(dto.email);
     if (!existingUser) throw new NotFoundException('User not found');
     if (existingUser.emailCode !== dto.resetCode) throw new UnauthorizedException('Invalid reset code');
@@ -144,7 +148,26 @@ export class AuthController {
 
     const updatedUserData = await this.userService.changePassword(existingUser, dto.newPassword);
 
-    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(req, updatedUserData);
-    return { ok: true, message: 'Password updated successfully', data: { accessToken, refreshToken, user: updatedUserData } };
+    // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(req, updatedUserData);
+    return { ok: true, message: 'Password updated successfully', data: { user: updatedUserData } };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(@Request() req) {
+    return this.authService.login(req.user.id);
+  }
+
+  @Post('refresh')
+  @UseGuards(RefreshAuthGuard)
+  async refreshToken(@Req() req) {
+    return this.authService.refreshToken(req.user.sessionId, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@GetSessionId() sessionId: string) {
+    return this.authService.logout(sessionId);
   }
 }

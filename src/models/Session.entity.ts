@@ -17,6 +17,9 @@ export class Session extends BaseEntity {
   @Column()
   operatingSystem: string;
 
+  @Column({ nullable: true })
+  refreshToken: string;
+
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'userId' })
   user: User;

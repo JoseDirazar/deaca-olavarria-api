@@ -110,16 +110,13 @@ export class UserService {
     return user;
   }
 
-  async findByEmailWithPassword(email: string): Promise<string | null> {
+  async findByEmailWithPassword(email: string): Promise<User | null> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .addSelect('user.password')
       .where('user.email = :email', { email })
       .getOne();
-
-    if (user) return (user).password;
-
-    return null;
+    return user;
   }
 
   async updateLastLogin(user: User): Promise<User> {

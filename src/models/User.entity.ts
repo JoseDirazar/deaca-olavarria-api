@@ -1,10 +1,11 @@
-import { Index, OneToMany } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Index, OneToMany } from 'typeorm';
 import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../infrastructure/models/Base.entity';
 import { Session } from './Session.entity';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { Review } from './Review.entity';
 import { Establishment } from './Establishment.entity';
+import { hash } from 'bcrypt';
 
 @Entity()
 export class User extends BaseEntity {
@@ -47,4 +48,10 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Establishment, (establishment) => establishment.user)
   establishments: Establishment[];
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword() {
+    this.password = await hash(this.password, 10);
+  }
 }
