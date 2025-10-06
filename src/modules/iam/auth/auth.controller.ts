@@ -1,8 +1,19 @@
-import { BadRequestException, Body, Controller, HttpCode, HttpStatus, NotFoundException, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { SignInWithGoogleDto } from './dto/sign-in-with-google.dto';
 import { Public } from 'src/infrastructure/decorators/public-route.decorator';
@@ -18,11 +29,9 @@ import { UserService } from '../user/user.service';
 import { TokenPayload } from 'google-auth-library';
 import { SessionService } from './session.service';
 import { compare } from 'bcrypt';
-import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
-
 
 @Controller('auth')
 export class AuthController {
@@ -30,59 +39,62 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly sessionService: SessionService,
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   @Public()
   @Post('sign-up')
-  async createUser(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() { email, password, firstName, lastName }: SignUpDto) {
-    if (!email || !password) throw new BadRequestException('Email y password son obligatorios');
+  async createUser(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() { email, password, firstName, lastName }: SignUpDto,
+  ) {
+    if (!email || !password)
+      throw new BadRequestException('Email y password son obligatorios');
     const userExist = await this.userService.userExistByEmail(email);
 
-    const user = await this.userService.createUser({ email, password, firstName, lastName });
-    const { accessToken, refreshToken, sessionId } = await this.authService.generateAccessAndRefreshToken(req, user);
-    res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    const user = await this.userService.createUser({
+      email,
+      password,
+      firstName,
+      lastName,
+    });
+    const { accessToken, refreshToken, sessionId } =
+      await this.authService.generateAccessAndRefreshToken(req, user);
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     return { ok: true, data: { accessToken, sessionId } };
   }
 
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('sign-in')
-  async signIn(
-    @Body() signInDto: SignInDto,
-    @Req() request: Request,
-  ) {
-    const userWithPassword = await this.userService.findByEmailWithPassword(signInDto.email);
+  async signIn(@Body() signInDto: SignInDto, @Req() request) {
+    const userWithPassword = await this.userService.findByEmailWithPassword(
+      signInDto.email,
+    );
     if (!userWithPassword) throw new NotFoundException('User not found');
-    if (!(await compare(signInDto.password, userWithPassword?.password ?? ""))) throw new UnauthorizedException('Contraseña no válida.');
+    if (!(await compare(signInDto.password, userWithPassword?.password ?? '')))
+      throw new UnauthorizedException('Contraseña no válida.');
     const { password, ...user } = userWithPassword as any;
     await this.userService.updateLastLogin(userWithPassword);
-    const { accessToken, refreshToken, sessionId } = await this.authService.generateAccessAndRefreshToken(request, user);
-    request.res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    const { accessToken, refreshToken, sessionId } =
+      await this.authService.generateAccessAndRefreshToken(request, user);
+    request.res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     return { ok: true, data: { accessToken, sessionId } };
   }
 
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Post('google-auth')
-  async signInWithGoogle(
-{{ ... }}
-    @Req()
-    request: Request,
-  ) {
-    const googleUser: TokenPayload = await this.authService.getUserWithGoogleTokens(logInWithGoogleDto.accessToken);
-    if (!googleUser.email) throw new BadRequestException('Access token no valido');
-    let user = await this.userService.userExistByEmail(googleUser.email);
-
-    if (!user) {
-      const userCreated = await this.userService.createWithGoogle(googleUser);
-      user = userCreated;
-    }
-    const userUpdated = await this.userService.editProfile(user, googleUser);
-
-    // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, userUpdated);
-    await this.userService.updateLastLogin(user);
-    return { ok: true, data: { user: userUpdated } };
-  }
+  // Google auth endpoint omitted for now (legacy code removed)
 
   // Legacy refresh-accesstoken endpoint removed in favor of /auth/refresh with RefreshAuthGuard
 
@@ -103,9 +115,11 @@ export class AuthController {
   async confirmEmail(@Body() dto: VerifyEmailDto): Promise<ApiResponse<User>> {
     const user = await this.userService.getVerificationCode(dto.email);
     if (!user) throw new NotFoundException('User not found');
-    if (user.emailCode !== dto.emailCode) throw new NotFoundException('Email code not valid');
+    if (user.emailCode !== dto.emailCode)
+      throw new NotFoundException('Email code not valid');
 
-    const updatedUser = await this.userService.verifyEmailAndResetEmailCode(user);
+    const updatedUser =
+      await this.userService.verifyEmailAndResetEmailCode(user);
     this.userService.editProfile(user, updatedUser);
     return { ok: true, data: updatedUser };
   }
@@ -113,50 +127,88 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('request-password-reset')
-  async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto): Promise<ApiResponse<void>> {
-    const user = await this.userService.getUserWithUnselectableFields(requestPasswordResetDto.email);
+  async requestPasswordReset(
+    @Body() requestPasswordResetDto: RequestPasswordResetDto,
+  ): Promise<ApiResponse<void>> {
+    const user = await this.userService.getUserWithUnselectableFields(
+      requestPasswordResetDto.email,
+    );
     if (!user) throw new NotFoundException('User not found');
     this.userService.generateResetCodeAndUpdateUser(user);
     this.userService.sendEmailVerificationCode(user);
-    return { ok: true, };
+    return { ok: true };
   }
 
   @Public()
   @Post('reset-password')
-  async resetPassword(
-    @Req() req: Request,
-    @Body() dto: ResetPasswordDto,
-  ) {
-    const existingUser = await this.userService.getResssetCodeAndPassword(dto.email);
+  async resetPassword(@Req() req: Request, @Body() dto: ResetPasswordDto) {
+    const existingUser = await this.userService.getResssetCodeAndPassword(
+      dto.email,
+    );
     if (!existingUser) throw new NotFoundException('User not found');
-    if (existingUser.emailCode !== dto.resetCode) throw new UnauthorizedException('Invalid reset code');
-    const codeAge = Date.now() - new Date(existingUser.emailCodeCreatedAt).getTime();
-    if (codeAge > 3600000 * 24) throw new UnauthorizedException('Reset code has expired');
+    if (existingUser.emailCode !== dto.resetCode)
+      throw new UnauthorizedException('Invalid reset code');
+    const codeAge =
+      Date.now() - new Date(existingUser.emailCodeCreatedAt).getTime();
+    if (codeAge > 3600000 * 24)
+      throw new UnauthorizedException('Reset code has expired');
 
-    const updatedUserData = await this.userService.changePassword(existingUser, dto.newPassword);
+    const updatedUserData = await this.userService.changePassword(
+      existingUser,
+      dto.newPassword,
+    );
 
     // const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(req, updatedUserData);
-    return { ok: true, message: 'Password updated successfully', data: { user: updatedUserData } };
+    return {
+      ok: true,
+      message: 'Password updated successfully',
+      data: { user: updatedUserData },
+    };
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, refreshToken, id: sessionId } = await this.authService.login(req, (req as any).user.id);
-    res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    const {
+      accessToken,
+      refreshToken,
+      id: sessionId,
+    } = await this.authService.login(req, (req as any).user.id);
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     return { ok: true, data: { accessToken, sessionId } };
   }
 
   @Post('refresh')
   @UseGuards(RefreshAuthGuard)
-  async refreshToken(@Req() req) {
-    return this.authService.refreshToken(req.user.sessionId, req.user.id);
+  async refreshToken(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, refreshToken } =
+      await this.authService.rotateAccessAndRefreshToken(
+        req.user.sessionId,
+        req.user.id,
+      );
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    return { ok: true, data: { accessToken } };
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@GetSessionId() sessionId: string, @Res({ passthrough: true }) res: Response) {
+  async logout(
+    @GetSessionId() sessionId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     res.clearCookie('refresh_token', { path: '/' });
     return this.authService.logout(sessionId);
   }
