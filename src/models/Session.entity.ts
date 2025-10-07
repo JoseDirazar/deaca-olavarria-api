@@ -20,7 +20,8 @@ export class Session extends BaseEntity {
   @Column({ nullable: true })
   refreshToken: string;
 
-  @ManyToOne(() => User, { eager: true })
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
   user: User;
+
 }

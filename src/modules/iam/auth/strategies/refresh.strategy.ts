@@ -2,7 +2,7 @@ import { ConfigType } from "@nestjs/config";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { PassportStrategy } from "@nestjs/passport";
 import { AuthJwtPayload } from "../types/auth-jwtPayload";
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import refreshJwtConfig from "src/config/refresh-jwt.config";
 import { Request } from "express";
 import { AuthService } from "../auth.service";
@@ -19,10 +19,7 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, "refresh-jwt"
     }
 
     validate(req: Request, payload: AuthJwtPayload) {
-        const refreshToken = req.cookies?.["refresh_token"] as string | undefined;
-        console.log("refreshToken", refreshToken);
-        if (!refreshToken) throw new UnauthorizedException("Refresh token not found");
-        const sessionId = payload.sessionId;
-        return this.authService.validateRefreshTokenV2(sessionId, refreshToken);
+        const refreshToken = req?.cookies?.['refresh_token']
+        return this.authService.validateRefreshJwtPayload(refreshToken, payload);
     }
 }

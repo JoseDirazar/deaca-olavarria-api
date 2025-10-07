@@ -25,7 +25,6 @@ export class EstablishmentController {
 
   @Get('')
   async getPaginatedEstablishments(@Query() params: EstablishmentsPaginationQueryParamsDto) {
-    console.log("GET PAGINATED ESTABLISHMENTS")
     const { page, establishments, limit, total } = await this.establishmentService.getPaginatedEstablishments(params);
 
     return {
@@ -45,17 +44,15 @@ export class EstablishmentController {
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Get('mine')
   async getMyEstablishments(@GetUser('id') userId: string): Promise<ApiResponse<Establishment[]>> {
-    console.log("GET MY ESTABLISHMENTS")
     const items = await this.establishmentService.getEstablishmentsByUser(userId);
-    return { ok: true, data: items };
+    return { data: items };
   }
 
   @Get(':id')
   async getEstablishmentById(@Param('id', new ParseUUIDPipe()) id: string) {
-    console.log("GET ESTABLISHMENT BY ID")
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) return new NotFoundException('No se encontro el establecimiento');
-    return { ok: true, data: establishment };
+    return { data: establishment };
   }
 
   // Owner create establishment for self
@@ -63,34 +60,31 @@ export class EstablishmentController {
   @RolesAllowed(Roles.ADMIN, Roles.BUSINESS_OWNER)
   @Post('mine')
   async createMyEstablishment(@Body() establishmentDto: EstablishmentDto, @GetUser() user: User) {
-    console.log("CREATE MY ESTABLISHMENT")
     const establishment = await this.establishmentService.createEstablishment(establishmentDto, user);
     if (!establishment) return new NotFoundException('No se pudo crear el establecimiento');
-    return { ok: true, data: establishment };
+    return { data: establishment };
   }
 
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Put(':id')
   async updateMyEstablishment(@Param('id', new ParseUUIDPipe()) id: string, @Body() establishmentDto: EstablishmentDto) {
-    console.log("UPDATE MY ESTABLISHMENT")
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) return new NotFoundException('No se encontro el establecimiento');
 
     const updatedEstablishment = await this.establishmentService.updateEstablishment(establishment, establishmentDto);
-    return { ok: true, data: updatedEstablishment };
+    return { data: updatedEstablishment };
   }
 
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Delete(':id')
   async deleteMyEstablishment(@Param('id', new ParseUUIDPipe()) id: string) {
-    console.log("DELETE MY ESTABLISHMENT")
     const establishmentToDelete = await this.establishmentService.getEstablishmentById(id);
     if (!establishmentToDelete) throw new NotFoundException('No se encontro el establecimiento');
 
     const result = await this.establishmentService.deleteEstablishment(establishmentToDelete);
-    return { ok: true, data: result };
+    return { data: result };
   }
 
   // Admin verify toggle
@@ -98,9 +92,8 @@ export class EstablishmentController {
   @RolesAllowed(Roles.ADMIN)
   @Patch(':id/verify')
   async verifyEstablishment(@Param('id', new ParseUUIDPipe()) id: string, @Body('verified') verified: boolean) {
-    console.log("VERIFY ESTABLISHMENT")
     const updatedEstablishment = await this.establishmentService.setVerified(id, verified);
-    return { ok: true, data: updatedEstablishment };
+    return { data: updatedEstablishment };
   }
 
   // Upload establishment avatar (owner)
@@ -134,12 +127,11 @@ export class EstablishmentController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log("UPLOAD ESTABLISHMENT AVATAR")
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
     if (!file) throw new BadRequestException('No se envio un archivo');
     const updatedEstablishment = await this.establishmentService.updateAvatar(establishment, file.filename);
-    return { ok: true, data: updatedEstablishment };
+    return { data: updatedEstablishment };
   }
 
   // Upload establishment avatar (owner)
@@ -173,7 +165,6 @@ export class EstablishmentController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    console.log("UPLOAD ESTABLISHMENT IMAGES")
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
     if (!files || files.length === 0) throw new BadRequestException('No se enviaron archivos');
@@ -181,14 +172,13 @@ export class EstablishmentController {
     // Solo pasar los nombres de archivo
     const fileNames = files.map((file) => file.filename);
     const updatedEstablishment = await this.establishmentService.uploadImages(establishment, fileNames);
-    return { ok: true, data: updatedEstablishment };
+    return { data: updatedEstablishment };
   }
 
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Patch(':id/completeness')
   async refreshCompleteness(@Param('id', new ParseUUIDPipe()) id: string) {
-    console.log("REFRESH COMPLETENESS")
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
     return { ok: await this.establishmentService.refreshCompleteness(id) };
@@ -196,39 +186,34 @@ export class EstablishmentController {
 
   @Get(':id/review')
   async getReviews(@Param('id', new ParseUUIDPipe()) id: string) {
-    console.log("GET REVIEWS")
     const reviews = await this.establishmentService.getReviewsByEstablishmentId(id);
     if (!reviews) throw new NotFoundException('Calificaciones no encontradas');
-    return { ok: true, data: reviews };
+    return { data: reviews };
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(":id/review")
   async createReview(@Param('id', new ParseUUIDPipe()) id: string, @GetUser() user: User, @Body() reviewDto: ReviewDto) {
-    console.log("CREATE REVIEW")
     const establishment = await this.establishmentService.getEstablishmentById(id);
-    console.log("establishment", establishment);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
     if (user.id === establishment.user.id) throw new BadRequestException('No puedes calificar tu propio establecimiento');
-    return { ok: true, data: await this.establishmentService.createReview(user, establishment, reviewDto) };
+    return { data: await this.establishmentService.createReview(user, establishment, reviewDto) };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('review/:reviewId')
   async updateReview(@Param('reviewId') reviewId: string, @Body() reviewDto: ReviewDto) {
-    console.log("UPDATE REVIEW")
     const review = await this.establishmentService.getReviewById(reviewId);
     if (!review) throw new NotFoundException('Calificacion no encontrada');
-    return { ok: true, data: await this.establishmentService.updateReview(review, reviewDto, review.establishment) };
+    return { data: await this.establishmentService.updateReview(review, reviewDto, review.establishment) };
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('review/:reviewId')
   async deleteReview(@Param('reviewId') reviewId: string) {
-    console.log("DELETE REVIEW")
     const review = await this.establishmentService.getReviewById(reviewId);
     if (!review) throw new NotFoundException('Calificacion no encontrada');
-    return { ok: true, data: await this.establishmentService.deleteReview(review, review.establishment) };
+    return { data: await this.establishmentService.deleteReview(review, review.establishment) };
   }
 }
 

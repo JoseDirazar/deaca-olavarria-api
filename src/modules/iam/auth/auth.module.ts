@@ -18,6 +18,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import refreshJwtConfig from 'src/config/refresh-jwt.config';
 import { RefreshJwtStrategy } from './strategies/refresh.strategy';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
+import { SessionCleanupService } from './cron/session-cleanup-service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -25,9 +27,10 @@ import { RefreshAuthGuard } from './guards/refresh-auth.guard';
     TypeOrmModule.forFeature([User, Session]),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
-    ConfigModule.forFeature(refreshJwtConfig)
+    ConfigModule.forFeature(refreshJwtConfig),
+    ScheduleModule.forRoot(),
   ],
-  providers: [UserService, AuthService, SessionService, EmailService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard, JwtAuthGuard],
+  providers: [UserService, AuthService, SessionService, EmailService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard, JwtAuthGuard, SessionCleanupService],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
 })

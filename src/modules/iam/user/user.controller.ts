@@ -21,9 +21,10 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async me(@GetUser("id") id: string) {
-    const user = await this.userService.findById(id);
-    return { ok: true, data: user };
+  async me(@GetUser() user: User) {
+    const userFound = await this.userService.findById(user.id);
+    if (!userFound) throw new NotFoundException('Usuario no encontrado');
+    return { data: userFound };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -47,7 +48,7 @@ export class UserController {
   @Put('')
   async editProfile(@GetUser() user: User, @Body() editProfileDto: EditProfileDto): Promise<ApiResponse<User>> {
     const usersaved = await this.userService.editProfile(user, editProfileDto);
-    return { ok: true, data: usersaved };
+    return { data: usersaved };
   }
 
   @Put('avatar')
@@ -86,7 +87,7 @@ export class UserController {
     const newAvatar = file.filename;
     const usersaved = await this.userService.changeAvatar(user, newAvatar);
 
-    return { ok: true, data: usersaved };
+    return { data: usersaved };
   }
 
   @Post('approve-establishment-owner')
@@ -96,7 +97,7 @@ export class UserController {
     const user = await this.userService.findById(userId);
     if (!user) throw new NotFoundException('Usuario no encontrado');
     const userSaved = await this.userService.approveEstablishmentOwner(user);
-    return { ok: true, data: userSaved };
+    return { data: userSaved };
   }
 
   @Get('profile')

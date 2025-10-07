@@ -1,6 +1,6 @@
 import { User } from '@models/User.entity';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { EmailService } from '@modules/email/email.service';
@@ -69,7 +69,7 @@ export class UserService {
     const randomNumber = Math.floor(Math.random() * 100000);
     const emailVerificationCode = randomNumber.toString().padStart(5, '0');
 
-    const response = await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
+    await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
     const user = new User();
     user.email = dto.email;
     user.password = dto.password;
@@ -150,7 +150,9 @@ export class UserService {
   }
 
   async createWithGoogle(googleUser: TokenPayload): Promise<User> {
+    const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture!);
     const user = await UserMapper.createUserWithGooglePayload(googleUser);
+    user.avatar = avatarFilePath!;
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
@@ -191,19 +193,19 @@ export class UserService {
     return user;
   }
 
-  sendEmailVerificationCode(user: User) {
-    this.emailService.sendEmail(
+  async sendEmailVerificationCode(user: User) {
+    await this.emailService.sendEmail(
       user.email,
       'Verificación de correo',
       `<p>Tu código de verificación es: ${user.emailCode}<p>`,
     );
   }
 
-  generateResetCodeAndUpdateUser(user: User) {
+  async generateResetCodeAndUpdateUser(user: User) {
     const resetCode = UserMapper.generateResetCode();
     user.emailCode = resetCode;
     user.emailCodeCreatedAt = new Date();
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 
   async verifyEmailAndResetEmailCode(user: User) {
