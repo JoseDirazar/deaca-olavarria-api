@@ -2,7 +2,6 @@ import { User } from '@models/User.entity';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { EmailService } from '@modules/email/email.service';
 import { SignUpDto } from '../auth/dto/sign-up.dto';

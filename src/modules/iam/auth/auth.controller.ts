@@ -15,7 +15,6 @@ import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { SignInWithGoogleDto } from './dto/sign-in-with-google.dto';
 import { Public } from 'src/infrastructure/decorators/public-route.decorator';
 import { GetSessionId } from 'src/infrastructure/decorators/get-session-id.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -26,11 +25,10 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 import { User } from '@models/User.entity';
 import { UserService } from '../user/user.service';
-import { TokenPayload } from 'google-auth-library';
 import { SessionService } from './session.service';
-import { compare } from 'bcrypt';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
+import * as argon2 from 'argon2';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 
 @Controller('auth')
@@ -39,18 +37,15 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly sessionService: SessionService,
     private readonly userService: UserService,
-  ) {}
+  ) { }
 
   @Public()
   @Post('sign-up')
   async createUser(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
     @Body() { email, password, firstName, lastName }: SignUpDto,
   ) {
-    if (!email || !password)
-      throw new BadRequestException('Email y password son obligatorios');
     const userExist = await this.userService.userExistByEmail(email);
+    if (userExist) throw new BadRequestException('User already exists');
 
     const user = await this.userService.createUser({
       email,
@@ -58,16 +53,8 @@ export class AuthController {
       firstName,
       lastName,
     });
-    const { accessToken, refreshToken, sessionId } =
-      await this.authService.generateAccessAndRefreshToken(req, user);
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    return { ok: true, data: { accessToken, sessionId } };
+
+    return { ok: true, };
   }
 
   @Public()
@@ -78,11 +65,12 @@ export class AuthController {
       signInDto.email,
     );
     if (!userWithPassword) throw new NotFoundException('User not found');
-    if (!(await compare(signInDto.password, userWithPassword?.password ?? '')))
+    console.log(await argon2.verify(userWithPassword.password, signInDto.password))
+    if (!(await argon2.verify(userWithPassword.password, signInDto.password)))
       throw new UnauthorizedException('Contraseña no válida.');
     const { password, ...user } = userWithPassword as any;
     await this.userService.updateLastLogin(userWithPassword);
-    const { accessToken, refreshToken, sessionId } =
+    const { accessToken, refreshToken } =
       await this.authService.generateAccessAndRefreshToken(request, user);
     request.res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
@@ -91,7 +79,7 @@ export class AuthController {
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    return { ok: true, data: { accessToken, sessionId } };
+    return { ok: true, data: { accessToken } };
   }
 
   // Google auth endpoint omitted for now (legacy code removed)
@@ -169,12 +157,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response, @GetUser() user: User) {
+    console.log("LOGIN CONTROLLER", user, req.user)
     const {
       accessToken,
       refreshToken,
-      id: sessionId,
-    } = await this.authService.login(req, (req as any).user.id);
+    } = await this.authService.login(req, user);
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       secure: true,
@@ -182,16 +170,19 @@ export class AuthController {
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    return { ok: true, data: { accessToken, sessionId } };
+    return { ok: true, data: { accessToken } };
   }
 
   @Post('refresh')
   @UseGuards(RefreshAuthGuard)
-  async refreshToken(@Req() req, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, refreshToken } =
+  async refreshToken(@GetSessionId() sessionId: string, @GetUser() user: User, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies?.['refresh_token'];
+    if (!refreshToken) throw new UnauthorizedException('Provide a refresh token');
+    const { accessToken } =
       await this.authService.rotateAccessAndRefreshToken(
-        req.user.sessionId,
-        req.user.id,
+        sessionId,
+        user.id,
+        refreshToken,
       );
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,

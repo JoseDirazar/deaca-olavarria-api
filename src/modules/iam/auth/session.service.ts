@@ -17,7 +17,7 @@ export class SessionService {
     const expiredAt = new Date();
     expiredAt.setSeconds(expiredAt.getSeconds() + jwtTokenRefreshExpiration);
     const userAgent = req.headers['user-agent'];
-
+    console.log("CREATE SESSION", req["connection"])
     const session = new Session();
     session.user = user;
     session.ip = req.headers['x-forwarded-for'] || req["connection"].remoteAddress || '';

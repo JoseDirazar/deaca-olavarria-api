@@ -10,9 +10,8 @@ import { ConfigService, ConfigType } from '@nestjs/config';
 import { Request } from 'express';
 import { User } from '@models/User.entity';
 import * as argon2 from 'argon2';
-import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import { OAuth2Client, } from 'google-auth-library';
 import { UserService } from '../user/user.service';
-import { compare } from 'bcrypt';
 import { AuthJwtPayload } from './types/auth-jwtPayload';
 import refreshJwtConfig from 'src/config/refresh-jwt.config';
 
@@ -29,7 +28,7 @@ export class AuthService {
       typeof refreshJwtConfig
     >,
     private readonly userService: UserService,
-  ) {}
+  ) { }
 
   async generateAccessAndRefreshToken(req, user: User) {
     const session = await this.sessionService.createSession(req, user);
@@ -43,40 +42,38 @@ export class AuthService {
       session.id,
       hashedRefreshToken,
     );
-    return { accessToken, refreshToken, sessionId: session.id };
+    return { accessToken, refreshToken };
   }
 
-  async rotateAccessAndRefreshToken(sessionId: string, userId: string) {
+  async rotateAccessAndRefreshToken(sessionId: string, userId: string, refreshToken: string) {
     const session = await this.getSession(sessionId);
-    if (!session || session.user.id !== userId)
-      throw new UnauthorizedException('Session not found');
+    if (!session || session.user.id !== userId) throw new UnauthorizedException('Session not found');
+
+    const hashedRefreshToken = session.refreshToken;
+    const isRefreshTokenMatch = await argon2.verify(hashedRefreshToken, refreshToken);
+    if (!isRefreshTokenMatch) throw new UnauthorizedException('Refresh token not valid');
+
     const payload: AuthJwtPayload = { sub: userId, sessionId };
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload),
-      this.jwtService.signAsync(payload, this.refreshJwtConfiguration),
-    ]);
-    const hashedRefreshToken = await argon2.hash(refreshToken);
+    const newAccessToken = await this.jwtService.signAsync(payload);
     await this.sessionService.updateHashedRefreshToken(
       sessionId,
       hashedRefreshToken,
     );
-    return { accessToken, refreshToken };
+    return { accessToken: newAccessToken };
   }
 
   async validateUser(email: string, password: string) {
     const user = await this.userService.findByEmailWithPassword(email);
     if (!user) throw new UnauthorizedException('User not found');
-    const isPasswordMatch = await compare(password, user.password);
+    const isPasswordMatch = await argon2.verify(user.password, password);
     if (!isPasswordMatch) throw new UnauthorizedException('Password not valid');
-    return { id: user.id };
+    return { user };
   }
 
-  async login(req: Request, userId: string) {
-    const user = await this.userService.findById(userId);
-    if (!user) throw new UnauthorizedException('User not found');
-    const { accessToken, refreshToken, sessionId } =
+  async login(req: Request, user: User) {
+    const { accessToken, refreshToken } =
       await this.generateAccessAndRefreshToken(req, user);
-    return { id: sessionId, accessToken, refreshToken };
+    return { id: user.id, accessToken, refreshToken };
   }
 
   refreshToken(sessionId: string, userId: string) {

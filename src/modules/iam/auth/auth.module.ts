@@ -27,7 +27,7 @@ import { RefreshAuthGuard } from './guards/refresh-auth.guard';
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig)
   ],
-  providers: [UserService, AuthService, SessionService, EmailService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard],
+  providers: [UserService, AuthService, SessionService, EmailService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard, JwtAuthGuard],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
