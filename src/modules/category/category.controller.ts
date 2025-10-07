@@ -52,7 +52,7 @@ export class CategoryController {
   async createSubcategory(@Body() { name, categoryId }: { name: string; categoryId: string }) {
     if (!name) return new BadRequestException('El nombre es requerido');
     if (!categoryId) return new BadRequestException('El id de la categoria es requerido');
-    const subcategory = await this.categoryService.createSubcategory(name, categoryId);
+    const subcategory = await this.categoryService.createSubcategory(categoryId, name);
     if (!subcategory) return new NotFoundException('No se encontro la subcategoria');
     return { ok: true, data: subcategory };
   }
@@ -84,8 +84,8 @@ export class CategoryController {
   @Delete('subcategories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  deleteSubcategory(@Param('id', new ParseUUIDPipe()) id: string) {
-    this.categoryService.deleteSubcategory(id);
+  async deleteSubcategory(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.categoryService.deleteSubcategory(id);
     return { ok: true };
   }
 }
