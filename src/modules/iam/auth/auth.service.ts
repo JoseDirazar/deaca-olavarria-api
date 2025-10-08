@@ -33,7 +33,7 @@ export class AuthService {
 
   async generateAccessAndRefreshToken(req, user: User) {
     const session = await this.sessionService.createSession(req, user);
-    const payload: AuthJwtPayload = { sub: user.id, sessionId: session.id };
+    const payload: AuthJwtPayload = { sub: user.id, sessionId: session.id, role: user.role };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, this.refreshJwtConfiguration),
@@ -87,7 +87,7 @@ export class AuthService {
     const session = await this.getSession(sessionId);
 
     if (!session || session.user.id !== userId) throw new UnauthorizedException('Unauthorized');
-    return { id: userId, sessionId };
+    return { id: userId, sessionId, role: session.user.role };
   }
 
   async validateRefreshJwtPayload(refreshToken: string, payload: AuthJwtPayload) {
@@ -95,7 +95,7 @@ export class AuthService {
     if (!session || session.user.id !== payload.sub) throw new UnauthorizedException('Unauthorized');
     const isRefreshTokenMatch = await argon2.verify(session.refreshToken, refreshToken);
     if (!isRefreshTokenMatch) throw new UnauthorizedException('Refresh token not valid');
-    return { id: payload.sub, sessionId: payload.sessionId };
+    return { id: payload.sub, sessionId: payload.sessionId, role: session.user.role };
   }
 
   async getSession(sessionId: string) {

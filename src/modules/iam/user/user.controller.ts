@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, HttpException, HttpStatus, UnsupportedMediaTypeException, Post, NotFoundException, Query, BadRequestException, Req } from '@nestjs/common';
+import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, UnsupportedMediaTypeException, Post, NotFoundException, Query, BadRequestException, Req } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
@@ -13,7 +13,8 @@ import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { GetUsersPaginatedQueryParamsDto } from './dto/get-users-paginated-query-params.dto';
 import { PaginatedResponse } from 'src/infrastructure/types/interfaces/pagination.interface';
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
-export const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+import { RolesGuard } from '../auth/guards/roles.guard';
+export const allowedFileExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg'];
 
 @Controller('user')
 export class UserController {
@@ -21,8 +22,8 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async me(@GetUser() user: User) {
-    const userFound = await this.userService.findById(user.id);
+  async me(@GetUser("id") userId: string) {
+    const userFound = await this.userService.findById(userId);
     if (!userFound) throw new NotFoundException('Usuario no encontrado');
     return { data: userFound };
   }
@@ -91,7 +92,7 @@ export class UserController {
   }
 
   @Post('approve-establishment-owner')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async approveEstablishmentOwner(@Body('userId') userId: string): Promise<ApiResponse<User>> {
     const user = await this.userService.findById(userId);

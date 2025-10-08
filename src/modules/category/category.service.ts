@@ -11,6 +11,9 @@ export class CategoryService {
     @InjectRepository(Subcategory) private readonly subcategoryRepository: Repository<Subcategory>,
   ) { }
 
+  async findOne(id: string) {
+    return await this.categoryRepository.findOne({ where: { id } });
+  }
   async getCategories() {
     return await this.categoryRepository.find({ relations: ['subcategories'] });
   }
@@ -57,5 +60,10 @@ export class CategoryService {
     const subcategory = await this.subcategoryRepository.findOne({ where: { id } });
     if (!subcategory) return null;
     return await this.subcategoryRepository.remove(subcategory);
+  }
+
+  async changeIcon(category: Category, icon: string) {
+    category.icon = icon;
+    return await this.categoryRepository.save(category);
   }
 }

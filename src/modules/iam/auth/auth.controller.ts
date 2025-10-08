@@ -90,6 +90,7 @@ export class AuthController {
     const accessToken = await this.authService.refreshToken({
       sessionId,
       sub: user.id,
+      role: user.role,
     });
 
     return { data: { accessToken } };

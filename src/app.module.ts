@@ -12,30 +12,17 @@ import { CategoryModule } from './modules/category/category.module';
 import { EstablishmentModule } from './modules/establishment/establishment.module';
 import { JwtGlobalModule } from './shared/jwt/jwt.module';
 import { DataService } from './infrastructure/scripts/DataService';
+import { serveStaticModuleOptions } from './config/serve-static-config';
 
-const serveStaticOptions = {
-  extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
-};
+
 
 @Module({
   imports: [
     ConfigModule.forRoot(ConfigModuleOptions),
     JwtGlobalModule,
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'upload', 'user', 'avatar'),
-      serveRoot: '/user/avatar',
-      serveStaticOptions,
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'upload', 'user', 'establishment'),
-      serveRoot: '/user/establishment',
-      serveStaticOptions,
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'upload', 'assets'),
-      serveRoot: '/assets',
-      serveStaticOptions,
-    }),
+    ServeStaticModule.forRoot(
+      ...serveStaticModuleOptions(__dirname)
+    ),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

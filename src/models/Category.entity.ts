@@ -8,6 +8,9 @@ export class Category extends BaseEntity {
   @Column()
   name: string;
 
+  @Column({ nullable: true })
+  icon: string;
+
   @OneToMany(() => Subcategory, (subcategory) => subcategory.category, { cascade: true })
   subcategories: Subcategory[];
 
