@@ -219,7 +219,7 @@ export class UserService {
 
   private async downloadAndSaveGoogleAvatar(imageUrl: string) {
     try {
-      const uploadDir = path.join(process.cwd(), 'uploads', 'user', 'avatar');
+      const uploadDir = path.join(process.cwd(), 'upload', 'user', 'avatar');
       await fs.mkdir(uploadDir, { recursive: true });
 
       const fileExtension = '.jpg';

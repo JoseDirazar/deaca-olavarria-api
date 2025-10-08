@@ -28,6 +28,7 @@ import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { SignInWithGoogleDto } from './dto/sign-in-with-google.dto';
 import { TokenPayload } from 'google-auth-library';
+import { ResendEmailCodeDto } from './dto/resend-email-code.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -62,6 +63,7 @@ export class AuthController {
     return { message: 'Bienvenido!', data: { accessToken } };
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('google-auth')
   async signInWithGoogle(
     @Body() logInWithGoogleDto: SignInWithGoogleDto,
@@ -76,9 +78,7 @@ export class AuthController {
       const userCreated = await this.userService.createWithGoogle(googleUser);
       user = userCreated;
     }
-    const userUpdated = await this.userService.editProfile(user, googleUser);
-
-    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, userUpdated);
+    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, user);
     await this.userService.updateLastLogin(user);
     this.authService.setCookie(res, refreshToken);
     return { message: 'Bienvenido!', data: { accessToken } };
@@ -118,7 +118,7 @@ export class AuthController {
     const updatedUser =
       await this.userService.verifyEmailAndResetEmailCode(user);
     this.userService.editProfile(user, updatedUser);
-    return { data: updatedUser };
+    return { message: 'Email verificado!' };
   }
 
   @HttpCode(HttpStatus.OK)
@@ -157,4 +157,12 @@ export class AuthController {
     return { message: 'Contraseña actualizada!' };
   }
 
+  @HttpCode(HttpStatus.OK)
+  @Post('resend-verification-email')
+  async resendVerificationEmail(@Body() { email }: ResendEmailCodeDto) {
+    const user = await this.userService.getVerificationCode(email);
+    if (!user) throw new NotFoundException('User not found');
+    await this.userService.sendEmailVerificationCode(user);
+    return { message: 'Verification email sent successfully' };
+  }
 }

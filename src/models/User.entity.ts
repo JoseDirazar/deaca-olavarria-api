@@ -50,8 +50,17 @@ export class User extends BaseEntity {
   establishments: Establishment[];
 
   @BeforeInsert()
+  private async hashPasswordOnInsert() {
+    if (this.password) {
+      this.password = await argon2.hash(this.password);
+    }
+  }
+
   @BeforeUpdate()
-  private async hashPassword() {
-    this.password = await argon2.hash(this.password);
+  private async hashPasswordOnUpdate() {
+    // Solo hashear si el password cambió
+    if (this.password && !this.password.startsWith('$argon2')) {
+      this.password = await argon2.hash(this.password);
+    }
   }
 }
