@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { urlencoded, json } from 'express';
 import * as pg from 'pg';
+import * as cookieParser from 'cookie-parser';
+
 import { HttpExceptionFilter } from './infrastructure/filters/global-exception.filter';
 import { winstonLogger } from './infrastructure/loggers/winston.logger';
 import { DataService } from './infrastructure/scripts/DataService';
@@ -37,6 +39,7 @@ async function bootstrap() {
 
   const loadData = app.get(DataService);
   await loadData.loadDataByDefault();
+  app.use(cookieParser());
 
   await app.listen(process.env.PORT ?? 4003);
 }

@@ -1,6 +1,6 @@
 import { TokenPayload } from "google-auth-library";
 import { User } from "@models/User.entity";
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 import { EditProfileDto } from "@modules/iam/user/dto/edit-profile.dto";
 
 export class UserMapper {
@@ -17,14 +17,12 @@ export class UserMapper {
 
         password = password.split('').sort(() => Math.random() - 0.5).join('');
 
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await argon2.hash(password);
         return hashedPassword;
     }
 
     static async hashPassword(password: string): Promise<string> {
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await argon2.hash(password);
         return hashedPassword;
     }
 
@@ -36,14 +34,12 @@ export class UserMapper {
     }
 
     static updateUserWithGooglePayload(payload: TokenPayload, user: User): User {
-        return {
-            ...user,
-            email: payload.email!,
-            firstName: payload.given_name!,
-            lastName: payload.family_name!,
-            avatar: payload.picture!,
-            emailVerified: true,
-        };
+        user.email = payload.email!;
+        user.firstName = payload.given_name!;
+        user.lastName = payload.family_name!;
+        user.avatar = payload.picture!;
+        user.emailVerified = true;
+        return user;
 
 
     }
@@ -53,17 +49,17 @@ export class UserMapper {
         user.email = payload.email!;
         user.firstName = payload.given_name!;
         user.lastName = payload.family_name!;
-        user.avatar = payload.picture!;
         user.emailVerified = true;
         user.password = await this.generateRandomPassword();
         return user;
     }
 
     static dtoToUser(user: User, dto: EditProfileDto): User {
-        return {
-            ...user,
-            ...dto,
-        };
+        user.firstName = dto.firstName!;
+        user.lastName = dto.lastName!;
+        user.avatar = dto.avatar!;
+
+        return user;
     }
 
     static verifyEmailAndResetEmailCode(user: User) {

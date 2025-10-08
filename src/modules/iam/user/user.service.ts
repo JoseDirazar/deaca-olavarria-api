@@ -1,8 +1,7 @@
 import { User } from '@models/User.entity';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { EmailService } from '@modules/email/email.service';
 import { SignUpDto } from '../auth/dto/sign-up.dto';
@@ -67,16 +66,13 @@ export class UserService {
 
   async createUser(dto: SignUpDto): Promise<User> {
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(dto.password, salt);
-
     const randomNumber = Math.floor(Math.random() * 100000);
     const emailVerificationCode = randomNumber.toString().padStart(5, '0');
 
-    const response = await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
+    await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
     const user = new User();
     user.email = dto.email;
-    user.password = hashedPassword;
+    user.password = dto.password;
     user.role = Roles.USER;
     user.emailCode = emailVerificationCode;
     user.emailCodeCreatedAt = new Date();
@@ -88,12 +84,9 @@ export class UserService {
 
   // Used in loadDataByDefault ONLY
   async createUserAdmin(email: string, password: string): Promise<User> {
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     const user = new User();
     user.email = email;
-    user.password = hashedPassword;
+    user.password = password;
     user.role = Roles.ADMIN;
     const savedUser = await this.userRepository.save(user);
     return savedUser;
@@ -110,16 +103,13 @@ export class UserService {
     return user;
   }
 
-  async findByEmailWithPassword(email: string): Promise<string | null> {
+  async findByEmailWithPassword(email: string): Promise<User | null> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .addSelect('user.password')
       .where('user.email = :email', { email })
       .getOne();
-
-    if (user) return (user).password;
-
-    return null;
+    return user;
   }
 
   async updateLastLogin(user: User): Promise<User> {
@@ -160,7 +150,9 @@ export class UserService {
   }
 
   async createWithGoogle(googleUser: TokenPayload): Promise<User> {
+    const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture!);
     const user = await UserMapper.createUserWithGooglePayload(googleUser);
+    user.avatar = avatarFilePath!;
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
@@ -201,19 +193,19 @@ export class UserService {
     return user;
   }
 
-  sendEmailVerificationCode(user: User) {
-    this.emailService.sendEmail(
+  async sendEmailVerificationCode(user: User) {
+    await this.emailService.sendEmail(
       user.email,
       'Verificación de correo',
       `<p>Tu código de verificación es: ${user.emailCode}<p>`,
     );
   }
 
-  generateResetCodeAndUpdateUser(user: User) {
+  async generateResetCodeAndUpdateUser(user: User) {
     const resetCode = UserMapper.generateResetCode();
     user.emailCode = resetCode;
     user.emailCodeCreatedAt = new Date();
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 
   async verifyEmailAndResetEmailCode(user: User) {
@@ -227,7 +219,7 @@ export class UserService {
 
   private async downloadAndSaveGoogleAvatar(imageUrl: string) {
     try {
-      const uploadDir = path.join(process.cwd(), 'uploads', 'user', 'avatar');
+      const uploadDir = path.join(process.cwd(), 'upload', 'user', 'avatar');
       await fs.mkdir(uploadDir, { recursive: true });
 
       const fileExtension = '.jpg';

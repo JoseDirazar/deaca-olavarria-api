@@ -47,7 +47,7 @@ export class Establishment extends BaseEntity {
   @Column({ default: false })
   isComplete: boolean;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'decimal', precision: 2 })
   rating: number;
 
   @OneToMany(() => Review, (review) => review.establishment, { cascade: true })

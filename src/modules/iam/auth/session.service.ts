@@ -11,13 +11,12 @@ export class SessionService {
     private readonly configService: ConfigService,
   ) { }
 
-  async createSession(req: Request, user: User): Promise<Session> {
+  async createSession(req: Request, user: User,): Promise<Session> {
     const jwtTokenRefreshExpiration: number = this.configService.get<number>('session.jwtTokenRefreshExpiration') ?? 604800; // 1 semana
 
     const expiredAt = new Date();
     expiredAt.setSeconds(expiredAt.getSeconds() + jwtTokenRefreshExpiration);
     const userAgent = req.headers['user-agent'];
-
     const session = new Session();
     session.user = user;
     session.ip = req.headers['x-forwarded-for'] || req["connection"].remoteAddress || '';
@@ -29,20 +28,22 @@ export class SessionService {
   }
 
   async removeSession(sessionId: string): Promise<void> {
-    const session = await this.findByIds(sessionId);
+    const session = await this.findOne(sessionId);
     if (!session) return;
     await this.sessionRepository.remove(session);
   }
 
-  async findByIds(sessionId: string): Promise<Session | null> {
+  async findOne(sessionId: string): Promise<Session | null> {
     return this.sessionRepository.findOne({
       where: { id: sessionId },
+      relations: ['user'],
     });
   }
 
-  async findById(sessionId: string): Promise<Session | null> {
-    return this.sessionRepository.findOne({
-      where: { id: sessionId },
-    });
+  async updateHashedRefreshToken(sessionId: string, hashedRefreshToken: string): Promise<void> {
+    const session = await this.findOne(sessionId);
+    if (!session) return;
+    session.refreshToken = hashedRefreshToken;
+    await this.sessionRepository.save(session);
   }
 }
