@@ -25,6 +25,7 @@ export class EstablishmentController {
 
   @Get('')
   async getPaginatedEstablishments(@Query() params: EstablishmentsPaginationQueryParamsDto) {
+    console.log(params);
     const { page, establishments, limit, total } = await this.establishmentService.getPaginatedEstablishments(params);
 
     return {

@@ -46,43 +46,30 @@ export class EstablishmentService {
   async getPaginatedEstablishments(params: EstablishmentsPaginationQueryParamsDto) {
     const page = params?.page || 1;
     const limit = params?.limit || 10;
-    const subcategories = params['subcategories[]'];
-    const categories = params['categories[]'];
-    const name = params.name;
-    const address = params.address;
     const sortBy = params.sortBy ?? 'createdAt';
     const sortOrder = (params.sortOrder ?? 'DESC').toUpperCase() as 'ASC' | 'DESC';
 
+    // Normalizar categories: convertir string a array si es necesario
+    const categories = params['categories[]'];
+    const normalizedCategories = categories
+      ? (Array.isArray(categories) ? categories : [categories])
+      : null;
+
     const establishmentsQueryBuilder = this.establishmentRepository
       .createQueryBuilder('establishments')
-      .leftJoinAndSelect('establishments.categories', 'categories')
-      .leftJoinAndSelect('establishments.subcategories', 'subcategories');
+      .leftJoinAndSelect('establishments.categories', 'categories');
 
-    if (subcategories) {
+    // Filtrar por categorías si existen
+    if (normalizedCategories && normalizedCategories.length > 0) {
       establishmentsQueryBuilder.andWhere(
-        'EXISTS (SELECT 1 FROM establishments_subcategories_subcategories ess ' +
-        'JOIN subcategories s ON ess.subcategoriesId = s.id ' +
-        'WHERE ess.establishmentsId = establishments.id AND s.name IN (:...subcategories))',
-        { subcategories }
+        'EXISTS (SELECT 1 FROM establishment_categories_category ecc ' +
+        'JOIN category c ON ecc.category_id = c.id ' +
+        'WHERE ecc.establishment_id = establishments.id AND c.name IN (:...categories))',
+        { categories: normalizedCategories }
       );
     }
 
-    if (categories) {
-      establishmentsQueryBuilder.andWhere(
-        'EXISTS (SELECT 1 FROM establishments_categories_categories ecc ' +
-        'JOIN categories c ON ecc.categoriesId = c.id ' +
-        'WHERE ecc.establishmentsId = establishments.id AND c.name IN (:...categories))',
-        { categories }
-      );
-    }
-
-    if (name) {
-      establishmentsQueryBuilder.andWhere('establishments.name ILIKE :name', { name: `%${name}%` });
-    }
-    if (address) {
-      establishmentsQueryBuilder.andWhere('establishments.address ILIKE :address', { address: `%${address}%` });
-    }
-
+    // Ordenamiento
     const sortWhitelist: Record<string, string> = {
       name: 'establishments.name',
       address: 'establishments.address',
@@ -91,6 +78,7 @@ export class EstablishmentService {
     const sortColumn = sortWhitelist[sortBy] ?? sortWhitelist['createdAt'];
     establishmentsQueryBuilder.orderBy(sortColumn, sortOrder);
 
+    // Paginación
     const [establishments, total] = await establishmentsQueryBuilder
       .skip((page - 1) * limit)
       .take(limit)
@@ -101,9 +89,8 @@ export class EstablishmentService {
       total,
       establishments,
       page
-    }
+    };
   }
-
   async getEstablishmentById(id: string) {
     return this.establishmentRepository.findOne({
       where: { id },
