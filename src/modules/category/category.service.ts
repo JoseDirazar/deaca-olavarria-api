@@ -1,5 +1,6 @@
 import { Category } from '@models/Category.entity';
 import { Subcategory } from '@models/Subcategory.entity';
+import { UploadService } from '@modules/upload/upload.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -9,6 +10,7 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category) private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Subcategory) private readonly subcategoryRepository: Repository<Subcategory>,
+    private readonly uploadService: UploadService,
   ) { }
 
   async findOne(id: string) {
@@ -63,7 +65,12 @@ export class CategoryService {
   }
 
   async changeIcon(category: Category, icon: string) {
-    category.icon = icon;
+    if (category.icon) {
+      const oldIconPath = this.uploadService.resolveUploadPath('assets', category.icon);
+      await this.uploadService.deleteFileIfExists(oldIconPath);
+    }
+    const normalizedPath = await this.uploadService.normalizeImage(icon);
+    category.icon = normalizedPath;
     return await this.categoryRepository.save(category);
   }
 }

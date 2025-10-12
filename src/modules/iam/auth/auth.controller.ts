@@ -86,11 +86,11 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(RefreshAuthGuard)
-  async refreshToken(@GetSessionId() sessionId: string, @GetUser() user: User) {
+  async refreshToken(@GetUser("sessionId") sessionId: string, @GetUser("id") sub: string, @GetUser("role") role: string) {
     const accessToken = await this.authService.refreshToken({
       sessionId,
-      sub: user.id,
-      role: user.role,
+      sub,
+      role,
     });
 
     return { data: { accessToken } };
@@ -100,7 +100,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(
-    @GetSessionId() sessionId: string,
+    @GetUser("sessionId") sessionId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     this.authService.clearCookie(res);

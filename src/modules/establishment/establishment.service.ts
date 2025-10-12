@@ -11,6 +11,7 @@ import { join } from 'path';
 import * as fs from 'fs/promises';
 import { Review } from '@models/Review.entity';
 import { ReviewDto } from './dto/review.dto';
+import { UploadService } from '@modules/upload/upload.service';
 
 @Injectable()
 export class EstablishmentService {
@@ -21,6 +22,7 @@ export class EstablishmentService {
     private readonly imageRepository: Repository<Image>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+    private readonly uploadService: UploadService,
   ) { }
 
   private computeIsComplete(est: Establishment): boolean {
@@ -91,6 +93,7 @@ export class EstablishmentService {
       page
     };
   }
+
   async getEstablishmentById(id: string) {
     return this.establishmentRepository.findOne({
       where: { id },
@@ -169,27 +172,14 @@ export class EstablishmentService {
     });
   }
 
-  async updateAvatar(establishment: Establishment, newAvatarFilePath: string) {
-    await this.removeOldFileIfExist(newAvatarFilePath);
-    establishment.avatar = newAvatarFilePath;
-    return await this.establishmentRepository.save(establishment);
-  }
-
-  async removeOldFileIfExist(oldAvatarPath: string): Promise<boolean> {
-    try {
-      const path = join(
-        process.cwd(),
-        'upload',
-        'establishment',
-        oldAvatarPath,
-      );
-      await fs.unlink(path);
-      return true;
-    } catch (error) {
-      // Log error pero continuar con la actualización
-      console.error('Error eliminando avatar anterior:', error);
-      return false;
+  async updateAvatar(establishment: Establishment, newAvatarFileName: string) {
+    if (establishment.avatar) {
+      const oldAvatarPath = this.uploadService.resolveUploadPath('user', 'establishment', establishment.avatar);
+      await this.uploadService.deleteFileIfExists(oldAvatarPath);
     }
+    const normalizedPath = await this.uploadService.normalizeImage(newAvatarFileName);
+    establishment.avatar = normalizedPath;
+    return await this.establishmentRepository.save(establishment);
   }
 
   async getReviewsByEstablishmentId(id: string) {

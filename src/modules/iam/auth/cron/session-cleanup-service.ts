@@ -13,7 +13,6 @@ export class SessionCleanupService {
         private readonly sessionRepository: Repository<Session>,
     ) { }
 
-    // 🕐 Esto corre cada hora automáticamente
     @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
     async handleExpiredSessions() {
         const result = await this.sessionRepository

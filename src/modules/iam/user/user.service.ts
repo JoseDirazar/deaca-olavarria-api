@@ -1,18 +1,19 @@
 import { User } from '@models/User.entity';
 import { Repository } from 'typeorm';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { EmailService } from '@modules/email/email.service';
 import { SignUpDto } from '../auth/dto/sign-up.dto';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
-import path, { join } from 'path';
+import path from 'path';
 import * as fs from 'fs/promises';
 import { GetUsersPaginatedQueryParamsDto } from './dto/get-users-paginated-query-params.dto';
 import { TokenPayload } from 'google-auth-library';
 import { UserMapper } from './mapper/user-mapper';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
+import { UploadService } from '@modules/upload/upload.service';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,7 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly emailService: EmailService,
+    private readonly uploadService: UploadService
   ) { }
 
   async getUsers(params: GetUsersPaginatedQueryParamsDto) {
@@ -117,35 +119,17 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  editProfile(user: User, editProfileDto: EditProfileDto | TokenPayload): Promise<User> {
-    if (editProfileDto instanceof EditProfileDto) {
-      const updatedUser = UserMapper.dtoToUser(user, editProfileDto);
-      return this.userRepository.save(updatedUser);
-    }
-    const updatedUser = UserMapper.updateUserWithGooglePayload(editProfileDto, user);
-    return this.userRepository.save(updatedUser);
+  editProfile(user: User, editProfileDto: EditProfileDto): Promise<User> {
+    return this.userRepository.save({ ...user, ...editProfileDto });
   }
 
   async changeAvatar(user: User, newAvatarFilePath: string): Promise<User> {
-
-    // Si existe un avatar previo, eliminarlo
     if (user.avatar) {
-      try {
-        const oldAvatarPath = join(
-          process.cwd(),
-          'upload',
-          'user',
-          'avatar',
-          user.avatar,
-        );
-        await fs.unlink(oldAvatarPath);
-      } catch (error) {
-        // Log error pero continuar con la actualización
-        console.error('Error eliminando avatar anterior:', error);
-      }
+      const oldAvatarPath = this.uploadService.resolveUploadPath('user', 'avatar', user.avatar);
+      await this.uploadService.deleteFileIfExists(oldAvatarPath);
     }
-
-    user.avatar = newAvatarFilePath;
+    const normalizedPath = await this.uploadService.normalizeImage(newAvatarFilePath);
+    user.avatar = normalizedPath;
     return this.userRepository.save(user);
   }
 
@@ -240,5 +224,7 @@ export class UserService {
       return null;
     }
   }
+
+
 
 }

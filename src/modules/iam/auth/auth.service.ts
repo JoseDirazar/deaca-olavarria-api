@@ -14,7 +14,7 @@ import { OAuth2Client, TokenPayload, } from 'google-auth-library';
 import { UserService } from '../user/user.service';
 import { AuthJwtPayload } from './types/auth-jwtPayload';
 import refreshJwtConfig from 'src/config/refresh-jwt.config';
-import { parseDurationToMs } from 'src/infrastructure/parseDurationToMs';
+import { parseDurationToMs } from 'src/infrastructure/utils/parseDurationToMs';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +34,7 @@ export class AuthService {
   async generateAccessAndRefreshToken(req, user: User) {
     const session = await this.sessionService.createSession(req, user);
     const payload: AuthJwtPayload = { sub: user.id, sessionId: session.id, role: user.role };
+    console.log("generate access and refresh token", payload);
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, this.refreshJwtConfiguration),

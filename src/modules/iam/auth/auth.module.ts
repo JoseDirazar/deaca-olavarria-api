@@ -7,7 +7,6 @@ import { Session } from '@models/Session.entity';
 import { SessionService } from './session.service';
 import { UserService } from '@modules/iam/user/user.service';
 import { User } from '@models/User.entity';
-import { EmailService } from '@modules/email/email.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtModule } from '@nestjs/jwt';
@@ -30,7 +29,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ConfigModule.forFeature(refreshJwtConfig),
     ScheduleModule.forRoot(),
   ],
-  providers: [UserService, AuthService, SessionService, EmailService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard, JwtAuthGuard, SessionCleanupService],
+  providers: [UserService, AuthService, SessionService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard, JwtAuthGuard, SessionCleanupService],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
 })

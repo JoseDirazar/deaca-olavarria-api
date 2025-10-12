@@ -1,15 +1,14 @@
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Post, Put, UnsupportedMediaTypeException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
-import { RolesAllowed } from '@modules/iam/auth/decorators/roles.decorator';
+import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { allowedFileExtensions } from '@modules/iam/user/user.controller';
-import { diskStorage } from 'multer';
-import * as uuid from 'uuid';
+
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 import { Category } from '@models/Category.entity';
+import { UploadInterceptor } from 'src/infrastructure/interceptors/upload.interceptor';
+import { CATEGORY_ICON_PATH } from 'src/infrastructure/utils/upload-paths';
 
 
 @Controller('category')
@@ -98,29 +97,7 @@ export class CategoryController {
 
   @Put(':id/icon')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      fileFilter(req, file, callback) {
-        if (
-          !allowedFileExtensions.includes(
-            file.originalname.split('.').pop() ?? '',
-          )
-        ) {
-          return callback(new UnsupportedMediaTypeException(), false);
-        }
-        callback(null, true);
-      },
-      storage: diskStorage({
-        destination: './upload/assets/',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = uuid.v4();
-          const extension = file.originalname.split('.').pop();
-          const uniqueFilename = `${uniqueSuffix}.${extension}`;
-          callback(null, uniqueFilename);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(UploadInterceptor(CATEGORY_ICON_PATH, ['jpg', 'png', "svg"]))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,
@@ -130,7 +107,7 @@ export class CategoryController {
     const category = await this.categoryService.findOne(id);
     if (!category) throw new NotFoundException('Categoria no encontrada');
 
-    const categorySaved = await this.categoryService.changeIcon(category, file.filename);
+    const categorySaved = await this.categoryService.changeIcon(category, CATEGORY_ICON_PATH + file.filename);
 
     return { data: categorySaved };
   }

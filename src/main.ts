@@ -33,7 +33,7 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
     credentials: true,
-    origin: [/http\:\/\/localhost\:\d{1,5}$/, /https\:\/\/deaca\.forgebyteslab\.com$/, /https\:\/\/deaca\.com$/],
+    origin: [/http\:\/\/localhost\:\d{1,5}$/, /https\:\/\/deacaolavarria\.forgebyteslab\.com$/, /https\:\/\/deacaolavarria\.com$/],
   });
   app.setGlobalPrefix('api');
 

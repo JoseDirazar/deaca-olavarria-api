@@ -17,8 +17,7 @@ export class UserMapper {
 
         password = password.split('').sort(() => Math.random() - 0.5).join('');
 
-        const hashedPassword = await argon2.hash(password);
-        return hashedPassword;
+        return password;
     }
 
     static async hashPassword(password: string): Promise<string> {

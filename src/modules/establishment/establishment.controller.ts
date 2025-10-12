@@ -2,25 +2,26 @@ import { BadRequestException, Body, Controller, Get, NotFoundException, Param, P
 import { EstablishmentService } from './establishment.service';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { allowedFileExtensions } from '@modules/iam/user/user.controller';
-import { diskStorage } from 'multer';
-import * as uuid from 'uuid';
 import { EstablishmentDto } from './dto/establishment.dto';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
-import { RolesAllowed } from '@modules/iam/auth/decorators/roles.decorator';
+import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { Patch, Delete } from '@nestjs/common';
 import { User } from '@models/User.entity';
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 import { Establishment } from '@models/Establishment.entity';
 import { ReviewDto } from './dto/review.dto';
+import { UploadFilesInterceptor, UploadInterceptor } from 'src/infrastructure/interceptors/upload.interceptor';
+import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
+import path from 'path';
+import { UploadService } from '@modules/upload/upload.service';
+import { ESTABLISHMENT_AVATAR_PATH, ESTABLISHMENT_IMAGE_PATH } from 'src/infrastructure/utils/upload-paths';
 
 @Controller('establishment')
 export class EstablishmentController {
   constructor(
     private readonly establishmentService: EstablishmentService,
-    //private readonly userService: UserService
+    private readonly uploadService: UploadService,
   ) { }
 
   @Get('')
@@ -66,8 +67,8 @@ export class EstablishmentController {
     return { data: establishment };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   @Put(':id')
   async updateMyEstablishment(@Param('id', new ParseUUIDPipe()) id: string, @Body() establishmentDto: EstablishmentDto) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
@@ -77,8 +78,8 @@ export class EstablishmentController {
     return { data: updatedEstablishment };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   @Delete(':id')
   async deleteMyEstablishment(@Param('id', new ParseUUIDPipe()) id: string) {
     const establishmentToDelete = await this.establishmentService.getEstablishmentById(id);
@@ -89,7 +90,7 @@ export class EstablishmentController {
   }
 
   // Admin verify toggle
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   @Patch(':id/verify')
   async verifyEstablishment(@Param('id', new ParseUUIDPipe()) id: string, @Body('verified') verified: boolean) {
@@ -101,67 +102,25 @@ export class EstablishmentController {
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Post(':id/avatar')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      fileFilter(req, file, callback) {
-        if (
-          !allowedFileExtensions.includes(
-            file.originalname.split('.').pop() ?? '',
-          )
-        ) {
-          return callback(new UnsupportedMediaTypeException(), false);
-        }
-        callback(null, true);
-      },
-      storage: diskStorage({
-        destination: './upload/user/establishment/',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = uuid.v4();
-          const extension = file.originalname.split('.').pop();
-          const uniqueFilename = `${uniqueSuffix}.${extension}`;
-          callback(null, uniqueFilename);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(UploadInterceptor(ESTABLISHMENT_AVATAR_PATH, ['jpg', 'png', "jpeg", "webp"]))
   async uploadEstablishmentAvatar(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    if (!file) throw new BadRequestException('No se envio un archivo');
+
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    if (!file) throw new BadRequestException('No se envio un archivo');
-    const updatedEstablishment = await this.establishmentService.updateAvatar(establishment, file.filename);
+
+    const updatedEstablishment = await this.establishmentService.updateAvatar(establishment, ESTABLISHMENT_AVATAR_PATH + file.filename);
     return { data: updatedEstablishment };
   }
 
   // Upload establishment avatar (owner)
-  @UseGuards(JwtAuthGuard)
-  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   @Post(':id/images')
-  @UseInterceptors(
-    FilesInterceptor('files', 10, {
-      fileFilter(req, file, callback) {
-        if (
-          !allowedFileExtensions.includes(
-            file.originalname.split('.').pop() ?? '',
-          )
-        ) {
-          return callback(new UnsupportedMediaTypeException(), false);
-        }
-        callback(null, true);
-      },
-      storage: diskStorage({
-        destination: './upload/user/establishment/',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = uuid.v4();
-          const extension = file.originalname.split('.').pop();
-          const uniqueFilename = `${uniqueSuffix}.${extension}`;
-          callback(null, uniqueFilename);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(UploadFilesInterceptor(ESTABLISHMENT_IMAGE_PATH, ['jpg', 'png', "jpeg", "webp"]))
   async uploadEstablishmentImages(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFiles() files: Express.Multer.File[],
@@ -170,14 +129,18 @@ export class EstablishmentController {
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
     if (!files || files.length === 0) throw new BadRequestException('No se enviaron archivos');
 
-    // Solo pasar los nombres de archivo
-    const fileNames = files.map((file) => file.filename);
-    const updatedEstablishment = await this.establishmentService.uploadImages(establishment, fileNames);
+    const normalizedFileNames = await Promise.all(
+      files.map(async (file) => {
+        const normalizedName = await this.uploadService.normalizeImage(ESTABLISHMENT_IMAGE_PATH + file.filename);
+        return normalizedName;
+      })
+    );
+    const updatedEstablishment = await this.establishmentService.uploadImages(establishment, normalizedFileNames);
     return { data: updatedEstablishment };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   @Patch(':id/completeness')
   async refreshCompleteness(@Param('id', new ParseUUIDPipe()) id: string) {
     const establishment = await this.establishmentService.getEstablishmentById(id);

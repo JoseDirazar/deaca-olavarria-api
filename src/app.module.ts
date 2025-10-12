@@ -13,6 +13,9 @@ import { EstablishmentModule } from './modules/establishment/establishment.modul
 import { JwtGlobalModule } from './shared/jwt/jwt.module';
 import { DataService } from './infrastructure/scripts/DataService';
 import { serveStaticModuleOptions } from './config/serve-static-config';
+import { UploadModule } from '@modules/upload/upload.module';
+import { EmailModule } from '@modules/email/email.module';
+import { EventModule } from '@modules/event/event.module';
 
 
 
@@ -42,6 +45,9 @@ import { serveStaticModuleOptions } from './config/serve-static-config';
     IamModule,
     CategoryModule,
     EstablishmentModule,
+    EventModule,
+    UploadModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService, DataService],
