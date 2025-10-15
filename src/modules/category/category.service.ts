@@ -16,6 +16,11 @@ export class CategoryService {
   async findOne(id: string) {
     return await this.categoryRepository.findOne({ where: { id } });
   }
+
+  async findByName(name: string) {
+    return await this.categoryRepository.findOne({ where: { name } });
+  }
+
   async getCategories() {
     return await this.categoryRepository.find({ relations: ['subcategories'] });
   }
@@ -28,8 +33,8 @@ export class CategoryService {
     return await this.subcategoryRepository.find({ where: { category: { id } } });
   }
 
-  async createCategory(name: string) {
-    const category = this.categoryRepository.create({ name });
+  async createCategory(name: string, icon?: string) {
+    const category = this.categoryRepository.create({ name, icon: icon || undefined });
     return await this.categoryRepository.save(category);
   }
 

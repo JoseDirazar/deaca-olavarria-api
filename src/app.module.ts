@@ -11,11 +11,12 @@ import { IamModule } from '@modules/iam/iam.module';
 import { CategoryModule } from './modules/category/category.module';
 import { EstablishmentModule } from './modules/establishment/establishment.module';
 import { JwtGlobalModule } from './shared/jwt/jwt.module';
-import { DataService } from './infrastructure/scripts/DataService';
+import { DataService } from './modules/upload/preload-script.service';
 import { serveStaticModuleOptions } from './config/serve-static-config';
 import { UploadModule } from '@modules/upload/upload.module';
 import { EmailModule } from '@modules/email/email.module';
 import { EventModule } from '@modules/event/event.module';
+import { CategoryService } from '@modules/category/category.service';
 
 
 
@@ -48,8 +49,9 @@ import { EventModule } from '@modules/event/event.module';
     EventModule,
     UploadModule,
     EmailModule,
+
   ],
   controllers: [AppController],
-  providers: [AppService, DataService],
+  providers: [AppService],
 })
 export class AppModule { }

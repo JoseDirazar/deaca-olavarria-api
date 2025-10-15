@@ -50,6 +50,21 @@ export class Establishment extends BaseEntity {
   @Column({ nullable: true, type: 'decimal', precision: 2 })
   rating: number;
 
+  @Column({ default: false, nullable: true })
+  acceptDebitCard: boolean;
+
+  @Column({ default: false, nullable: true })
+  acceptCreditCard: boolean;
+
+  @Column({ nullable: true, type: 'decimal', precision: 2 })
+  cashDiscount: number;
+
+  @Column({ default: false, nullable: true })
+  acceptMercadoPago: boolean;
+
+  @Column({ default: false, nullable: true })
+  acceptCtaDNI: boolean;
+
   @OneToMany(() => Review, (review) => review.establishment, { cascade: true })
   reviewsReceived: Review[] | null;
 
