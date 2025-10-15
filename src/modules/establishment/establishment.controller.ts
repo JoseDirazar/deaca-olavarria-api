@@ -13,9 +13,8 @@ import { Establishment } from '@models/Establishment.entity';
 import { ReviewDto } from './dto/review.dto';
 import { UploadFilesInterceptor, UploadInterceptor } from 'src/infrastructure/interceptors/upload.interceptor';
 import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
-import path from 'path';
 import { UploadService } from '@modules/upload/upload.service';
-import { ESTABLISHMENT_AVATAR_PATH, ESTABLISHMENT_IMAGE_PATH } from 'src/infrastructure/utils/upload-paths';
+import { ESTABLISHMENT_LOGO_PATH, ESTABLISHMENT_IMAGES_PATH } from 'src/infrastructure/utils/upload-paths';
 
 @Controller('establishment')
 export class EstablishmentController {
@@ -102,7 +101,7 @@ export class EstablishmentController {
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER)
   @Post(':id/avatar')
-  @UseInterceptors(UploadInterceptor(ESTABLISHMENT_AVATAR_PATH, ['jpg', 'png', "jpeg", "webp"]))
+  @UseInterceptors(UploadInterceptor(ESTABLISHMENT_LOGO_PATH + 'logo/', ['jpg', 'png', "jpeg", "webp"]))
   async uploadEstablishmentAvatar(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFile() file: Express.Multer.File,
@@ -112,7 +111,7 @@ export class EstablishmentController {
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
 
-    const updatedEstablishment = await this.establishmentService.updateAvatar(establishment, ESTABLISHMENT_AVATAR_PATH + file.filename);
+    const updatedEstablishment = await this.establishmentService.updateAvatar(establishment, file.filename);
     return { data: updatedEstablishment };
   }
 
@@ -120,7 +119,7 @@ export class EstablishmentController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   @Post(':id/images')
-  @UseInterceptors(UploadFilesInterceptor(ESTABLISHMENT_IMAGE_PATH, ['jpg', 'png', "jpeg", "webp"]))
+  @UseInterceptors(UploadFilesInterceptor(ESTABLISHMENT_IMAGES_PATH, ['jpg', 'png', "jpeg", "webp"]))
   async uploadEstablishmentImages(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFiles() files: Express.Multer.File[],
@@ -131,7 +130,7 @@ export class EstablishmentController {
 
     const normalizedFileNames = await Promise.all(
       files.map(async (file) => {
-        const normalizedName = await this.uploadService.normalizeImage(ESTABLISHMENT_IMAGE_PATH + file.filename);
+        const normalizedName = await this.uploadService.normalizeImage(file.filename);
         return normalizedName;
       })
     );
