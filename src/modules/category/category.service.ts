@@ -4,6 +4,7 @@ import { UploadService } from '@modules/upload/upload.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -33,9 +34,9 @@ export class CategoryService {
     return await this.subcategoryRepository.find({ where: { category: { id } } });
   }
 
-  async createCategory(name: string, icon?: string) {
-    const category = this.categoryRepository.create({ name, icon: icon || undefined });
-    return await this.categoryRepository.save(category);
+  async createCategory(categoryDto: CreateCategoryDto) {
+    const newCategory = this.categoryRepository.create(categoryDto);
+    return await this.categoryRepository.save(newCategory);
   }
 
   async createSubcategory(name: string, categoryId: string) {
@@ -71,10 +72,10 @@ export class CategoryService {
 
   async changeIcon(category: Category, icon: string) {
     if (category.icon) {
-      const oldIconPath = this.uploadService.resolveUploadPath('assets', category.icon);
+      const oldIconPath = this.uploadService.resolveUploadPath('category', category.icon);
       await this.uploadService.deleteFileIfExists(oldIconPath);
     }
-    const normalizedPath = await this.uploadService.normalizeImage(icon);
+    const normalizedPath = await this.uploadService.normalizeImage(icon, { width: 120, height: 120 });
     category.icon = normalizedPath;
     return await this.categoryRepository.save(category);
   }

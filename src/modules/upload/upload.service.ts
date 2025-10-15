@@ -8,11 +8,8 @@ const unlinkAsync = promisify(fs.unlink);
 
 @Injectable()
 export class UploadService {
-    async normalizeImage(filePath: string, options: { width?: number; height?: number } = { width: 800, height: 800 }): Promise<string> {
-        console.log({
-            filePath,
-            options
-        })
+    async normalizeImage(filePath: string, options?: { width?: number; height?: number }): Promise<string> {
+
         try {
             const extname = path.extname(filePath);
             const dirname = path.dirname(filePath);

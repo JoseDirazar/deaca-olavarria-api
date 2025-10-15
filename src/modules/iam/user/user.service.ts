@@ -125,7 +125,7 @@ export class UserService {
 
   async changeAvatar(user: User, newAvatarFilePath: string): Promise<User> {
     if (user.avatar) {
-      const oldAvatarPath = this.uploadService.resolveUploadPath('user', 'avatar', user.avatar);
+      const oldAvatarPath = this.uploadService.resolveUploadPath('user', user.avatar);
       await this.uploadService.deleteFileIfExists(oldAvatarPath);
     }
     const normalizedPath = await this.uploadService.normalizeImage(newAvatarFilePath);

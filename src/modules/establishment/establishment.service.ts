@@ -1,5 +1,5 @@
 import { Establishment } from '@models/Establishment.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
@@ -12,6 +12,7 @@ import * as fs from 'fs/promises';
 import { Review } from '@models/Review.entity';
 import { ReviewDto } from './dto/review.dto';
 import { UploadService } from '@modules/upload/upload.service';
+import { ESTABLISHMENT_AVATAR_PATH, ESTABLISHMENT_IMAGE_PATH } from 'src/infrastructure/utils/upload-paths';
 
 @Injectable()
 export class EstablishmentService {
@@ -174,7 +175,7 @@ export class EstablishmentService {
 
   async updateAvatar(establishment: Establishment, newAvatarFileName: string) {
     if (establishment.avatar) {
-      const oldAvatarPath = this.uploadService.resolveUploadPath('user', 'establishment', establishment.avatar);
+      const oldAvatarPath = this.uploadService.resolveUploadPath('establishment', "logo", establishment.avatar);
       await this.uploadService.deleteFileIfExists(oldAvatarPath);
     }
     const normalizedPath = await this.uploadService.normalizeImage(newAvatarFileName);
@@ -244,5 +245,14 @@ export class EstablishmentService {
     establishment.rating = reviews.length === 0 ? 0 : totalRatings / reviews.length;
     await this.establishmentRepository.save(establishment);
     return establishment;
+  }
+
+  async deleteImage(establishment: Establishment, imageId: string) {
+    const image = await this.imageRepository.findOne({ where: { id: imageId }, relations: ['establishment'] });
+    if (!image) throw new NotFoundException('Imagen no encontrada');
+    if (image.establishment.id !== establishment.id) throw new UnauthorizedException('No tienes permiso para eliminar esta imagen');
+    const imagePath = this.uploadService.resolveUploadPath('establishment', image.fileName);
+    await this.uploadService.deleteFileIfExists(imagePath);
+    return await this.imageRepository.remove(image);
   }
 }

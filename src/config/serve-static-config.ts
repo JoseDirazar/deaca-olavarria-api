@@ -4,18 +4,28 @@ const serveStaticOptions = {
 };
 export const serveStaticModuleOptions = (dirname: string) => [
     {
-        rootPath: join(dirname, '..', '..', 'upload', 'user', 'avatar'),
-        serveRoot: '/user/avatar',
+        rootPath: join(dirname, '..', '..', 'upload', 'user'),
+        serveRoot: '/user',
         serveStaticOptions,
     },
     {
-        rootPath: join(dirname, '..', '..', 'upload', 'user', 'establishment'),
-        serveRoot: '/user/establishment',
+        rootPath: join(dirname, '..', '..', 'upload', 'establishment'),
+        serveRoot: '/establishment',
+        serveStaticOptions,
+    },
+    {
+        rootPath: join(dirname, '..', '..', 'upload', 'establishment', 'logo'),
+        serveRoot: '/establishment/logo',
         serveStaticOptions,
     },
     {
         rootPath: join(dirname, '..', '..', 'upload', 'assets'),
         serveRoot: '/assets',
+        serveStaticOptions,
+    },
+    {
+        rootPath: join(dirname, '..', '..', 'upload', 'category'),
+        serveRoot: '/category',
         serveStaticOptions,
     }
 ]

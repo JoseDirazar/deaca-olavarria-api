@@ -26,7 +26,6 @@ export class EstablishmentController {
 
   @Get('')
   async getPaginatedEstablishments(@Query() params: EstablishmentsPaginationQueryParamsDto) {
-    console.log(params);
     const { page, establishments, limit, total } = await this.establishmentService.getPaginatedEstablishments(params);
 
     return {
@@ -112,7 +111,7 @@ export class EstablishmentController {
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
 
-    const updatedEstablishment = await this.establishmentService.updateAvatar(establishment, ESTABLISHMENT_AVATAR_PATH + file.filename);
+    const updatedEstablishment = await this.establishmentService.updateAvatar(establishment, file.path);
     return { data: updatedEstablishment };
   }
 
@@ -131,7 +130,8 @@ export class EstablishmentController {
 
     const normalizedFileNames = await Promise.all(
       files.map(async (file) => {
-        const normalizedName = await this.uploadService.normalizeImage(ESTABLISHMENT_IMAGE_PATH + file.filename);
+        console.log(file.path)
+        const normalizedName = await this.uploadService.normalizeImage(file.path);
         return normalizedName;
       })
     );
@@ -140,12 +140,19 @@ export class EstablishmentController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Delete(':id/image/:imageId')
+  async deleteEstablishmentImage(@Param('id', new ParseUUIDPipe()) id: string, @Param('imageId', new ParseUUIDPipe()) imageId: string) {
+    const establishment = await this.establishmentService.getEstablishmentById(id);
+    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    return { data: await this.establishmentService.deleteImage(establishment, imageId) };
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   @Patch(':id/completeness')
   async refreshCompleteness(@Param('id', new ParseUUIDPipe()) id: string) {
-    const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    return { ok: await this.establishmentService.refreshCompleteness(id) };
+    return { data: await this.establishmentService.refreshCompleteness(id) };
   }
 
   @Get(':id/review')
