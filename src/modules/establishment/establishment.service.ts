@@ -54,13 +54,32 @@ export class EstablishmentService {
 
     // Normalizar categories: convertir string a array si es necesario
     const categories = params['categories[]'];
+    const subcategories = params['subcategories[]'];
+    const search = params['search'];
     const normalizedCategories = categories
       ? (Array.isArray(categories) ? categories : [categories])
+      : null;
+    const normalizedSubcategories = subcategories
+      ? (Array.isArray(subcategories) ? subcategories : [subcategories])
       : null;
 
     const establishmentsQueryBuilder = this.establishmentRepository
       .createQueryBuilder('establishments')
-      .leftJoinAndSelect('establishments.categories', 'categories');
+      .select([
+        'establishments.id',
+        'establishments.name',
+        'establishments.address',
+        'establishments.description',
+        'establishments.avatar',
+        'establishments.isComplete',
+        'establishments.verified',
+        'establishments.createdAt',
+        'establishments.updatedAt',
+        'establishments.latitude',
+        'establishments.longitude',
+      ])
+      .leftJoinAndSelect('establishments.categories', 'categories')
+      .leftJoinAndSelect('establishments.subcategories', 'subcategories');
 
     // Filtrar por categorías si existen
     if (normalizedCategories && normalizedCategories.length > 0) {
@@ -69,6 +88,24 @@ export class EstablishmentService {
         'JOIN category c ON ecc.category_id = c.id ' +
         'WHERE ecc.establishment_id = establishments.id AND c.name IN (:...categories))',
         { categories: normalizedCategories }
+      );
+    }
+
+    // Filtrar por subcategorias si existen
+    if (normalizedSubcategories && normalizedSubcategories.length > 0) {
+      establishmentsQueryBuilder.andWhere(
+        'EXISTS (SELECT 1 FROM establishment_categories_subcategory ecs ' +
+        'JOIN subcategory s ON ecs.subcategory_id = s.id ' +
+        'WHERE ecs.establishment_id = establishments.id AND s.name IN (:...subcategories))',
+        { subcategories: normalizedSubcategories }
+      );
+    }
+
+    // Filtrar por búsqueda si existe
+    if (search && search.trim().length > 0) {
+      establishmentsQueryBuilder.andWhere(
+        'establishments.name ILIKE :search OR establishments.name ILIKE :search',
+        { search: `%${search.trim()}%` }
       );
     }
 

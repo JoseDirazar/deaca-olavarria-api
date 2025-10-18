@@ -6,63 +6,63 @@ import { Image } from './Image.entity';
 import { Review } from './Review.entity';
 import { User } from './User.entity';
 
-@Entity()
+@Entity({ name: 'establishment' })
 export class Establishment extends BaseEntity {
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   address: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   phone: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   email: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   website: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   description: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   avatar: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   instagram: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   facebook: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   latitude: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   longitude: string;
 
-  @Column({ default: false })
+  @Column({ default: false, type: 'bool' })
   verified: boolean;
 
-  @Column({ default: false })
+  @Column({ default: false, type: 'bool' })
   isComplete: boolean;
 
   @Column({ nullable: true, type: 'decimal', precision: 2 })
   rating: number;
 
-  @Column({ default: false, nullable: true })
+  @Column({ default: false, nullable: true, type: 'bool' })
   acceptDebitCard: boolean;
 
-  @Column({ default: false, nullable: true })
+  @Column({ default: false, nullable: true, type: 'bool' })
   acceptCreditCard: boolean;
 
   @Column({ nullable: true, type: 'decimal', precision: 2 })
   cashDiscount: number;
 
-  @Column({ default: false, nullable: true })
+  @Column({ default: false, nullable: true, type: 'bool' })
   acceptMercadoPago: boolean;
 
-  @Column({ default: false, nullable: true })
+  @Column({ default: false, nullable: true, type: 'bool' })
   acceptCtaDNI: boolean;
 
   @OneToMany(() => Review, (review) => review.establishment, { cascade: true })

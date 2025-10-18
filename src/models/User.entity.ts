@@ -7,13 +7,16 @@ import { Review } from './Review.entity';
 import { Establishment } from './Establishment.entity';
 import * as argon2 from 'argon2';
 
-@Entity()
+@Entity({ name: "user" })
 export class User extends BaseEntity {
   @Index({ unique: true })
   @Column({ type: 'varchar', length: 255, nullable: false })
   email: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, })
+  banned: boolean;
+
+  @Column({ type: 'boolean', default: false, })
   emailVerified: boolean;
 
   @Column({ type: 'varchar', length: 128, nullable: false, select: false })

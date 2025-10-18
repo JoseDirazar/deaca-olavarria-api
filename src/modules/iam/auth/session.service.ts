@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Session } from '@models/Session.entity';
 import { User } from '@models/User.entity';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 
 export class SessionService {
   constructor(
@@ -11,17 +12,33 @@ export class SessionService {
     private readonly configService: ConfigService,
   ) { }
 
-  async createSession(req: Request, user: User,): Promise<Session> {
-    const jwtTokenRefreshExpiration: number = this.configService.get<number>('session.jwtTokenRefreshExpiration') ?? 604800; // 1 semana
+  async createSession(req: Request, user: User): Promise<Session> {
+    const jwtTokenRefreshExpiration: number =
+      this.configService.get<number>('session.jwtTokenRefreshExpiration') ?? 604800;
 
     const expiredAt = new Date();
     expiredAt.setSeconds(expiredAt.getSeconds() + jwtTokenRefreshExpiration);
-    const userAgent = req.headers['user-agent'];
+
+    const userAgent = req.headers['user-agent'] || '';
+
     const session = new Session();
     session.user = user;
-    session.ip = req.headers['x-forwarded-for'] || req["connection"].remoteAddress || '';
-    session.browser = userAgent?.match(/(chrome|firefox|safari|edge|opera)/i) || '';
-    session.operatingSystem = userAgent?.match(/(windows|mac os|linux|android|iOS)/i) || '';
+
+    // Obtener IP correctamente
+    session.ip = (
+      req.headers['x-forwarded-for'] ||
+      req.headers['x-real-ip'] ||
+      req.socket?.remoteAddress ||
+      req.ip ||
+      ''
+    ).toString().split(',')[0].trim();
+
+    // Extraer browser
+    session.browser = userAgent.match(/(chrome|firefox|safari|edge|opera|brave)/i)?.[0] || 'Unknown';
+
+    // Extraer OS (corregido iOS)
+    session.operatingSystem = userAgent.match(/(windows|mac os x|linux|android|iphone|ipad)/i)?.[0] || 'Unknown';
+
     session.expiredAt = expiredAt;
 
     return this.sessionRepository.save(session);

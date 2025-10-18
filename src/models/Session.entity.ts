@@ -5,19 +5,19 @@ import { User } from './User.entity';
 
 @Entity()
 export class Session extends BaseEntity {
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   expiredAt: Date;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   ip: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   browser: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   operatingSystem: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   refreshToken: string;
 
   @ManyToOne(() => User)

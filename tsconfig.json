@@ -1,24 +1,22 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "declaration": false,
-    "removeComments": true,
+    "target": "es2022",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "es2017",
+    "resolveJsonModule": true,
+    "declaration": false,
+    "removeComments": true,
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "resolveJsonModule": true,
-    "allowJs": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "paths": {
       "@models/*": ["src/models/*"],
       "@modules/*": ["src/modules/*"],
@@ -26,5 +24,7 @@
       "@infrastructure/*": ["infrastructure/*"],
       "@config": ["config"]
     }
-  }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "test"]
 }

@@ -130,7 +130,6 @@ export class EstablishmentController {
 
     const normalizedFileNames = await Promise.all(
       files.map(async (file) => {
-        console.log(file.path)
         const normalizedName = await this.uploadService.normalizeImage(file.path);
         return normalizedName;
       })

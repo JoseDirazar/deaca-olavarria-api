@@ -1,15 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UserService } from '@modules/iam/user/user.service';
-import { CategoryService } from '@modules/category/category.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Image } from '@models/Image.entity';
 import { CreateCategoryDto } from '@modules/category/dto/create-category.dto';
+import { User } from '@models/User.entity';
+import { Establishment } from '@models/Establishment.entity';
+import { Category } from '@models/Category.entity';
 
 @Injectable()
 export class DataService {
   private readonly logger = new Logger(DataService.name);
-  constructor(@InjectRepository(Image) private readonly imageRepository: Repository<Image>, private readonly userService: UserService, private readonly categoryService: CategoryService,) { }
+  constructor(
+    @InjectRepository(Image) private readonly imageRepository: Repository<Image>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Category) private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Establishment) private readonly establishmentRepository: Repository<Establishment>) { }
 
   async loadDataByDefault(): Promise<void> {
     const defaultUsers = [
@@ -21,10 +26,10 @@ export class DataService {
 
     for (const user of defaultUsers) {
       this.logger.debug(`creating default user ${user.email} if it does not exist`);
-      const userExists = await this.userService.userExistByEmail(user.email);
+      const userExists = await this.userRepository.findOneBy({ email: user.email });
 
       if (!userExists) {
-        await this.userService.createUserAdmin(user.email, user.password);
+        await this.userRepository.save({ email: user.email, password: user.password });
       }
     }
 
@@ -357,12 +362,60 @@ export class DataService {
       }
     ];
 
+    const defaultEstablishments = [
+      {
+        name: "Brandi",
+        address: "Calle 123",
+        description: "Brandi es una empresa de tecnología que ofrece soluciones innovadoras para mejorar la experiencia de los usuarios.",
+        avatar: "Screenshot from 2025-10-17 13-01-23.png",
+        isComplete: true,
+        verified: true,
+        latitude: "-36.89136217536246",
+        longitude: "-60.328559258424605",
+        email: "brandi@brandi.com",
+        instagram: "brandi",
+        facebook: "brandi",
+        website: "brandi.com",
+        phone: "123456789",
+        images: [
+          {
+            fileName: "Screenshot from 2025-10-17 13-02-49.png",
+          },
+          {
+            fileName: "Screenshot from 2025-10-17 13-03-00.png",
+          },
+          {
+            fileName: "Screenshot from 2025-10-17 13-03-16.png",
+          },
+          {
+            fileName: "Screenshot from 2025-10-17 13-03-27.png",
+          },
+          {
+            fileName: "Screenshot from 2025-10-17 13-03-54.png",
+          }
+        ]
+      },
+    ];
+
+
     for (const category of defaultCategories) {
       this.logger.debug(`creating default category ${category.name} if it does not exist`);
-      const categoryExists = await this.categoryService.findByName(category.name);
+      const categoryExists = await this.categoryRepository.findOneBy({ name: category.name });
 
       if (!categoryExists) {
-        await this.categoryService.createCategory(category);
+        await this.categoryRepository.save(category);
+      } else {
+        await this.categoryRepository.delete(categoryExists.id);
+        await this.categoryRepository.save(category);
+      }
+    }
+
+    for (const establishment of defaultEstablishments) {
+      this.logger.debug(`creating default establishment ${establishment.name} if it does not exist`);
+      const establishmentExists = await this.establishmentRepository.findOneBy({ name: establishment.name });
+
+      if (!establishmentExists) {
+        await this.establishmentRepository.save(establishment);
       }
     }
   }

@@ -15,7 +15,6 @@ import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { GetSessionId } from 'src/infrastructure/decorators/get-session-id.decorator';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';

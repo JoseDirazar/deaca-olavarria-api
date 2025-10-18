@@ -2,12 +2,12 @@ import { BaseEntity } from "src/infrastructure/models/Base.entity";
 import { Column, Entity, OneToMany } from "typeorm";
 import { Image } from "./Image.entity";
 
-@Entity()
+@Entity({ name: 'event' })
 export class Event extends BaseEntity {
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
     name: string;
 
-    @Column()
+    @Column({ type: 'text' })
     description: string;
 
     @Column({ type: 'timestamp' })
@@ -16,7 +16,7 @@ export class Event extends BaseEntity {
     @Column({ type: 'timestamp' })
     end: Date;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
     time: string;
 
     @Column({ type: 'decimal', precision: 10, scale: 8 })
@@ -28,13 +28,16 @@ export class Event extends BaseEntity {
     @Column({ nullable: true, type: 'decimal', precision: 2 })
     price: number | null;
 
-    @Column({ default: false })
+    @Column({ default: false, type: 'bool' })
     active: boolean;
 
-    @Column({ default: false })
+    @Column({ default: false, type: 'bool' })
+    verified: boolean;
+
+    @Column({ default: false, type: 'boolean' })
     isSingleTime: boolean;
 
-    @Column({ nullable: true, type: 'varchar' })
+    @Column({ nullable: true, type: 'varchar', length: 255 })
     image: string | null;
 
     @OneToMany(() => Image, (image) => image.event, { cascade: true, onDelete: 'CASCADE' })

@@ -1,21 +1,18 @@
+import 'reflect-metadata';
 import './config/dd-tracer';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { urlencoded, json } from 'express';
-import * as pg from 'pg';
-import * as cookieParser from 'cookie-parser';
 
 import { HttpExceptionFilter } from './infrastructure/filters/global-exception.filter';
 import { winstonLogger } from './infrastructure/loggers/winston.logger';
 import { DataService } from './modules/upload/preload-script.service';
+import cookieParser from 'cookie-parser';
 
-export const logger = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production' ? winstonLogger : new Logger('workitfy-backend');
+export const logger = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production' ? winstonLogger : new Logger('deaca-backend');
 
 async function bootstrap() {
-  pg.defaults.parseInputDatesAsUTC = false;
-  pg.types.setTypeParser(1114, (stringValue: string) => new Date(`${stringValue}Z`));
-
   const app = await NestFactory.create(AppModule);
   app.use(json({ limit: '1mb' }));
   app.use(urlencoded({ extended: true, limit: '1mb' }));

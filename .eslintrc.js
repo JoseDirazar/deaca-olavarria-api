@@ -1,33 +1,45 @@
 module.exports = {
+  root: true,
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: 'tsconfig.json',
-    tsconfigRootDir: __dirname,
-    sourceType: 'modules',
-    tsconfigRootDir: __dirname,
-    ecmaVersion: 2020,
-    allowImportExportEverywhere: true,
-    codeFrame: true,
+    project: './tsconfig.json',
+    sourceType: 'module',
+    ecmaVersion: 'latest',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: ['plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
-  root: true,
+  plugins: ['@typescript-eslint', 'prettier'],
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended', // integra Prettier con ESLint
+  ],
   env: {
     node: true,
     jest: true,
+    es2021: true,
   },
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['dist', 'node_modules', '.eslintrc.js'],
   rules: {
-    '@typescript-eslint/interface-name-prefix': 'off',
+    // TypeScript
+    '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    'linebreak-style': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+    ],
+
+    // Estilo y Prettier
     'prettier/prettier': [
       'error',
       {
         endOfLine: 'auto',
+        singleQuote: true,
+        trailingComma: 'all',
+        printWidth: 100,
+        semi: true,
       },
     ],
+
+    // Otros
+    'no-console': 'off', // puedes poner "warn" si quieres evitar logs en prod
   },
 };

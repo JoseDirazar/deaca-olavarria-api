@@ -4,9 +4,9 @@ import { Establishment } from './Establishment.entity';
 import { Exclude } from 'class-transformer';
 import { Event } from './Event.entity';
 
-@Entity()
+@Entity({ name: 'image' })
 export class Image extends BaseEntity {
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   fileName: string;
 
   @ManyToOne(() => Establishment, (establishment) => establishment.images, { onDelete: 'CASCADE' })
