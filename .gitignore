@@ -62,4 +62,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /upload/user/*
 /upload/establishment/*
 /upload/establishment/logo/*
-
+/upload/category/*

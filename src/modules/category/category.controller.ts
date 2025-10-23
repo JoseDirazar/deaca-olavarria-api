@@ -108,7 +108,7 @@ export class CategoryController {
     const category = await this.categoryService.findOne(id);
     if (!category) throw new NotFoundException('Categoria no encontrada');
 
-    const categorySaved = await this.categoryService.changeIcon(category, CATEGORY_ICON_PATH + file.filename);
+    const categorySaved = await this.categoryService.changeIcon(category, file.path);
 
     return { data: categorySaved };
   }

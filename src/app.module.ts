@@ -14,6 +14,7 @@ import { UploadModule } from '@modules/upload/upload.module';
 import { EmailModule } from '@modules/email/email.module';
 import { EventModule } from '@modules/event/event.module';
 import { typeormConfig } from './config/typeorm.config';
+import { AppReviewModule } from '@modules/app-review/app-review.module';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { typeormConfig } from './config/typeorm.config';
     EventModule,
     UploadModule,
     EmailModule,
-
+    AppReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

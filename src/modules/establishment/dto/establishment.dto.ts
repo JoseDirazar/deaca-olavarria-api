@@ -1,6 +1,6 @@
 import { Category } from "@models/Category.entity";
 import { Subcategory } from "@models/Subcategory.entity";
-import { IsArray, IsNotEmpty, IsString } from "class-validator";
+import { IsArray, IsEmail, IsNotEmpty, IsString, IsUrl, Length } from "class-validator";
 
 export class EstablishmentDto {
     @IsString()
@@ -17,16 +17,16 @@ export class EstablishmentDto {
     @IsNotEmpty()
     phone: string;
 
-
     @IsString()
     @IsNotEmpty()
+    @IsEmail()
     email: string;
 
-
     @IsString()
     @IsNotEmpty()
+    @IsUrl()
+    @Length(255)
     website: string;
-
 
     @IsString()
     @IsNotEmpty()
@@ -34,11 +34,15 @@ export class EstablishmentDto {
 
     @IsString()
     @IsNotEmpty()
+    @IsUrl()
+    @Length(255)
     instagram: string;
 
 
     @IsString()
     @IsNotEmpty()
+    @IsUrl()
+    @Length(255)
     facebook: string;
 
 

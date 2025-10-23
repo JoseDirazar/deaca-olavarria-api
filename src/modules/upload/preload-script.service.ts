@@ -398,25 +398,25 @@ export class DataService {
     ];
 
 
-    for (const category of defaultCategories) {
-      this.logger.debug(`creating default category ${category.name} if it does not exist`);
-      const categoryExists = await this.categoryRepository.findOneBy({ name: category.name });
+    // for (const category of defaultCategories) {
+    //   this.logger.debug(`creating default category ${category.name} if it does not exist`);
+    //   const categoryExists = await this.categoryRepository.findOneBy({ name: category.name });
 
-      if (!categoryExists) {
-        await this.categoryRepository.save(category);
-      } else {
-        await this.categoryRepository.delete(categoryExists.id);
-        await this.categoryRepository.save(category);
-      }
-    }
+    //   if (!categoryExists) {
+    //     await this.categoryRepository.save(category);
+    //   } else {
+    //     await this.categoryRepository.delete(categoryExists.id);
+    //     await this.categoryRepository.save(category);
+    //   }
+    // }
 
-    for (const establishment of defaultEstablishments) {
-      this.logger.debug(`creating default establishment ${establishment.name} if it does not exist`);
-      const establishmentExists = await this.establishmentRepository.findOneBy({ name: establishment.name });
+    // for (const establishment of defaultEstablishments) {
+    //   this.logger.debug(`creating default establishment ${establishment.name} if it does not exist`);
+    //   const establishmentExists = await this.establishmentRepository.findOneBy({ name: establishment.name });
 
-      if (!establishmentExists) {
-        await this.establishmentRepository.save(establishment);
-      }
-    }
+    //   if (!establishmentExists) {
+    //     await this.establishmentRepository.save(establishment);
+    //   }
+    // }
   }
 }
