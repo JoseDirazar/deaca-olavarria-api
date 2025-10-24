@@ -5,7 +5,7 @@ import { Roles } from 'src/infrastructure/types/enums/Roles';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<Roles[]>(ROLES_KEY, [

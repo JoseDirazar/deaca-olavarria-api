@@ -14,7 +14,9 @@ export class DataService {
     @InjectRepository(Image) private readonly imageRepository: Repository<Image>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Category) private readonly categoryRepository: Repository<Category>,
-    @InjectRepository(Establishment) private readonly establishmentRepository: Repository<Establishment>) { }
+    @InjectRepository(Establishment)
+    private readonly establishmentRepository: Repository<Establishment>,
+  ) {}
 
   async loadDataByDefault(): Promise<void> {
     const defaultUsers = [
@@ -40,22 +42,22 @@ export class DataService {
         subcategories: [
           { name: 'Bebidas' },
           { name: 'Celiaquia | Diabetes | Hipertensión' },
-          { name: "Comidas caseras | Viandas" },
-          { name: "Conservas | Embutidaos | Quesos" },
-          { name: "Desayunos" },
-          { name: "Diabéticos | Productos secos" },
-          { name: "Dulces" },
-          { name: "Ensaladas" },
-          { name: "Granjas" },
-          { name: "Hamburguesas" },
-          { name: "Leches | Kefir | Yogurt" },
-          { name: "Miel" },
-          { name: "Milanesas" },
-          { name: "Pastas | Panes | Pizzas | Tartas" },
-          { name: "Productos rurales" },
-          { name: "Sushi" },
-          { name: "Tés | Cafés" },
-          { name: "Vegetarismo | Veganismo" },
+          { name: 'Comidas caseras | Viandas' },
+          { name: 'Conservas | Embutidaos | Quesos' },
+          { name: 'Desayunos' },
+          { name: 'Diabéticos | Productos secos' },
+          { name: 'Dulces' },
+          { name: 'Ensaladas' },
+          { name: 'Granjas' },
+          { name: 'Hamburguesas' },
+          { name: 'Leches | Kefir | Yogurt' },
+          { name: 'Miel' },
+          { name: 'Milanesas' },
+          { name: 'Pastas | Panes | Pizzas | Tartas' },
+          { name: 'Productos rurales' },
+          { name: 'Sushi' },
+          { name: 'Tés | Cafés' },
+          { name: 'Vegetarismo | Veganismo' },
         ],
       },
       {
@@ -75,7 +77,7 @@ export class DataService {
         ],
       },
       {
-        name: "Artesanias y diseños",
+        name: 'Artesanias y diseños',
         icon: 'artesanias-y-diseños.svg',
         subcategories: [
           { name: 'agendas/encuadernación' },
@@ -105,7 +107,7 @@ export class DataService {
       },
 
       {
-        name: "Costuras y Tejidos",
+        name: 'Costuras y Tejidos',
         icon: 'costuras-y-tejidos.svg',
         subcategories: [
           { name: 'almohadones/fundas/cortinas' },
@@ -124,10 +126,10 @@ export class DataService {
           { name: 'tejidos' },
           { name: 'telar' },
           { name: 'uniformes para empresa' },
-        ]
+        ],
       },
       {
-        name: "Cuidado Personal",
+        name: 'Cuidado Personal',
         icon: 'cuidado-personal.svg',
         subcategories: [
           { name: 'cosmetología' },
@@ -137,7 +139,7 @@ export class DataService {
         ],
       },
       {
-        name: "Cuidados a domicilio",
+        name: 'Cuidados a domicilio',
         icon: 'cuidados-a-domicilio.svg',
         subcategories: [
           { name: 'botón antipánico' },
@@ -152,10 +154,10 @@ export class DataService {
           { name: 'podología' },
           { name: 'trámites' },
           { name: 'traslados' },
-        ]
+        ],
       },
       {
-        name: "Fiestas y eventos",
+        name: 'Fiestas y eventos',
         icon: 'fiestas-y-eventos.svg',
         subcategories: [
           { name: 'alquiler de insumos' },
@@ -173,10 +175,10 @@ export class DataService {
           { name: 'seguridad' },
           { name: 'videos' },
           { name: 'wedding planner' },
-        ]
+        ],
       },
       {
-        name: "Hogar",
+        name: 'Hogar',
         icon: 'hogar.svg',
         subcategories: [
           { name: 'afilador' },
@@ -220,10 +222,10 @@ export class DataService {
           { name: 'vidrieria' },
           { name: 'yesero' },
           { name: 'zingueria' },
-        ]
+        ],
       },
       {
-        name: "Jardin y Plantas",
+        name: 'Jardin y Plantas',
         icon: 'jardin-y-plantas.svg',
         subcategories: [
           { name: 'compostaje' },
@@ -233,10 +235,10 @@ export class DataService {
           { name: 'paisajismo' },
           { name: 'permacultura' },
           { name: 'plantas/vivero' },
-        ]
+        ],
       },
       {
-        name: "Marketing e Informatica",
+        name: 'Marketing e Informatica',
         icon: 'marketing-e-informatica.svg',
         subcategories: [
           { name: 'community manager' },
@@ -244,10 +246,10 @@ export class DataService {
           { name: 'diseñador gráfico' },
           { name: 'marketing' },
           { name: 'servicio técnico' },
-        ]
+        ],
       },
       {
-        name: "Mascotas",
+        name: 'Mascotas',
         icon: 'mascotas.svg',
         subcategories: [
           { name: 'cafés pet friendly' },
@@ -260,10 +262,10 @@ export class DataService {
           { name: 'refugios' },
           { name: 'urgencias' },
           { name: 'vacunaciones' },
-        ]
+        ],
       },
       {
-        name: "Mundo Infantil",
+        name: 'Mundo Infantil',
         icon: 'mundo-infantil.svg',
         subcategories: [
           { name: 'accesorios' },
@@ -283,7 +285,7 @@ export class DataService {
           { name: 'talleres' },
           { name: 'titiriteros' },
           { name: 'uniformes' },
-        ]
+        ],
       },
       {
         name: 'Salud',
@@ -301,7 +303,7 @@ export class DataService {
           { name: 'osteopatía' },
           { name: 'quiropraxia' },
           { name: 'suplementos' },
-        ]
+        ],
       },
       {
         name: 'Terapias y Alternativas',
@@ -322,7 +324,7 @@ export class DataService {
           { name: 'spa' },
           { name: 'tarot' },
           { name: 'terapia celular' },
-        ]
+        ],
       },
       {
         name: 'Vida Activa',
@@ -345,58 +347,58 @@ export class DataService {
           { name: 'travesías/ciclismo' },
           { name: 'trekking' },
           { name: 'yoga' },
-        ]
+        ],
       },
       {
-        name: "Clases",
+        name: 'Clases',
         icon: 'clases.svg',
       },
       {
-        name: "Vida Nocturna",
+        name: 'Vida Nocturna',
       },
       {
-        name: "24Hs",
+        name: '24Hs',
       },
       {
-        name: "Domingos",
-      }
+        name: 'Domingos',
+      },
     ];
 
     const defaultEstablishments = [
       {
-        name: "Brandi",
-        address: "Calle 123",
-        description: "Brandi es una empresa de tecnología que ofrece soluciones innovadoras para mejorar la experiencia de los usuarios.",
-        avatar: "Screenshot from 2025-10-17 13-01-23.png",
+        name: 'Brandi',
+        address: 'Calle 123',
+        description:
+          'Brandi es una empresa de tecnología que ofrece soluciones innovadoras para mejorar la experiencia de los usuarios.',
+        avatar: 'Screenshot from 2025-10-17 13-01-23.png',
         isComplete: true,
         verified: true,
-        latitude: "-36.89136217536246",
-        longitude: "-60.328559258424605",
-        email: "brandi@brandi.com",
-        instagram: "brandi",
-        facebook: "brandi",
-        website: "brandi.com",
-        phone: "123456789",
+        latitude: '-36.89136217536246',
+        longitude: '-60.328559258424605',
+        email: 'brandi@brandi.com',
+        instagram: 'brandi',
+        facebook: 'brandi',
+        website: 'brandi.com',
+        phone: '123456789',
         images: [
           {
-            fileName: "Screenshot from 2025-10-17 13-02-49.png",
+            fileName: 'Screenshot from 2025-10-17 13-02-49.png',
           },
           {
-            fileName: "Screenshot from 2025-10-17 13-03-00.png",
+            fileName: 'Screenshot from 2025-10-17 13-03-00.png',
           },
           {
-            fileName: "Screenshot from 2025-10-17 13-03-16.png",
+            fileName: 'Screenshot from 2025-10-17 13-03-16.png',
           },
           {
-            fileName: "Screenshot from 2025-10-17 13-03-27.png",
+            fileName: 'Screenshot from 2025-10-17 13-03-27.png',
           },
           {
-            fileName: "Screenshot from 2025-10-17 13-03-54.png",
-          }
-        ]
+            fileName: 'Screenshot from 2025-10-17 13-03-54.png',
+          },
+        ],
       },
     ];
-
 
     // for (const category of defaultCategories) {
     //   this.logger.debug(`creating default category ${category.name} if it does not exist`);

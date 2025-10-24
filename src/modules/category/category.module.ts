@@ -11,4 +11,4 @@ import { Image } from '@models/Image.entity';
   providers: [CategoryService],
   imports: [TypeOrmModule.forFeature([Category, Subcategory, Image])],
 })
-export class CategoryModule { }
+export class CategoryModule {}

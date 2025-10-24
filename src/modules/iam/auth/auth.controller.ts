@@ -34,12 +34,10 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   @Post('sign-up')
-  async createUser(
-    @Body() { email, password, firstName, lastName }: SignUpDto,
-  ) {
+  async createUser(@Body() { email, password, firstName, lastName }: SignUpDto) {
     const userExist = await this.userService.userExistByEmail(email);
     if (userExist) throw new BadRequestException('User already exists');
 
@@ -56,7 +54,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response, @GetUser() user: User) {
+  async login(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @GetUser() user: User,
+  ) {
     const { accessToken, refreshToken } = await this.authService.login(req, user);
     this.authService.setCookie(res, refreshToken);
     return { message: 'Bienvenido!', data: { accessToken } };
@@ -69,7 +71,9 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<{ accessToken: string }>> {
-    const googleUser: TokenPayload = await this.authService.getUserWithGoogleTokens(logInWithGoogleDto.accessToken);
+    const googleUser: TokenPayload = await this.authService.getUserWithGoogleTokens(
+      logInWithGoogleDto.accessToken,
+    );
     if (!googleUser.email) throw new BadRequestException('Access token no valido');
     let user = await this.userService.userExistByEmail(googleUser.email);
 
@@ -77,7 +81,10 @@ export class AuthController {
       const userCreated = await this.userService.createWithGoogle(googleUser);
       user = userCreated;
     }
-    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(request, user);
+    const { accessToken, refreshToken } = await this.authService.generateAccessAndRefreshToken(
+      request,
+      user,
+    );
     await this.userService.updateLastLogin(user);
     this.authService.setCookie(res, refreshToken);
     return { message: 'Bienvenido!', data: { accessToken } };
@@ -85,7 +92,11 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(RefreshAuthGuard)
-  async refreshToken(@GetUser("sessionId") sessionId: string, @GetUser("id") sub: string, @GetUser("role") role: string) {
+  async refreshToken(
+    @GetUser('sessionId') sessionId: string,
+    @GetUser('id') sub: string,
+    @GetUser('role') role: string,
+  ) {
     const accessToken = await this.authService.refreshToken({
       sessionId,
       sub,
@@ -98,10 +109,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(
-    @GetUser("sessionId") sessionId: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async logout(@GetUser('sessionId') sessionId: string, @Res({ passthrough: true }) res: Response) {
     this.authService.clearCookie(res);
     await this.authService.logout(sessionId);
     return { message: 'Gracias por utilizar deacá.' };
@@ -112,11 +120,9 @@ export class AuthController {
   async confirmEmail(@Body() dto: VerifyEmailDto): Promise<ApiResponse<User>> {
     const user = await this.userService.getVerificationCode(dto.email);
     if (!user) throw new NotFoundException('User not found');
-    if (user.emailCode !== dto.emailCode)
-      throw new NotFoundException('Email code not valid');
+    if (user.emailCode !== dto.emailCode) throw new NotFoundException('Email code not valid');
 
-    const updatedUser =
-      await this.userService.verifyEmailAndResetEmailCode(user);
+    const updatedUser = await this.userService.verifyEmailAndResetEmailCode(user);
     this.userService.editProfile(user, updatedUser);
     return { message: 'Email verificado!' };
   }
@@ -138,21 +144,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    const existingUser = await this.userService.getResssetCodeAndPassword(
-      dto.email,
-    );
+    const existingUser = await this.userService.getResssetCodeAndPassword(dto.email);
     if (!existingUser) throw new NotFoundException('User not found');
     if (existingUser.emailCode !== dto.resetCode)
       throw new UnauthorizedException('Invalid reset code');
-    const codeAge =
-      Date.now() - new Date(existingUser.emailCodeCreatedAt).getTime();
-    if (codeAge > 3600000 * 24)
-      throw new UnauthorizedException('Reset code has expired');
+    const codeAge = Date.now() - new Date(existingUser.emailCodeCreatedAt).getTime();
+    if (codeAge > 3600000 * 24) throw new UnauthorizedException('Reset code has expired');
 
-    await this.userService.changePassword(
-      existingUser,
-      dto.newPassword,
-    );
+    await this.userService.changePassword(existingUser, dto.newPassword);
 
     return { message: 'Contraseña actualizada!' };
   }

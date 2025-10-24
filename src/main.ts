@@ -10,7 +10,10 @@ import { winstonLogger } from './infrastructure/loggers/winston.logger';
 import { DataService } from './modules/upload/preload-script.service';
 import cookieParser from 'cookie-parser';
 
-export const logger = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production' ? winstonLogger : new Logger('deaca-backend');
+export const logger =
+  process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production'
+    ? winstonLogger
+    : new Logger('deaca-backend');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,7 +33,11 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
     credentials: true,
-    origin: [/http\:\/\/localhost\:\d{1,5}$/, /https\:\/\/deacaolavarria\.forgebyteslab\.com$/, /https\:\/\/deacaolavarria\.com$/],
+    origin: [
+      /http\:\/\/localhost\:\d{1,5}$/,
+      /https\:\/\/deacaolavarria\.forgebyteslab\.com$/,
+      /https\:\/\/deacaolavarria\.com$/,
+    ],
   });
   app.setGlobalPrefix('api');
 

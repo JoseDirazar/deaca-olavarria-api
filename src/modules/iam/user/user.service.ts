@@ -1,4 +1,4 @@
-import { User } from '@models/User.entity';
+import { AccountStatus, User } from '@models/User.entity';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,7 +21,7 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly emailService: EmailService,
-    private readonly uploadService: UploadService
+    private readonly uploadService: UploadService,
   ) { }
 
   async getUsers(params: GetUsersPaginatedQueryParamsDto) {
@@ -34,7 +34,7 @@ export class UserService {
     if (search) {
       // Search by full name or email using CONCAT function
       queryBuilder.andWhere(
-        '(CONCAT(user.firstName, \' \', user.lastName) ILIKE :search OR user.email ILIKE :search)',
+        "(CONCAT(user.firstName, ' ', user.lastName) ILIKE :search OR user.email ILIKE :search)",
         { search: `%${search}%` },
       );
     }
@@ -63,15 +63,18 @@ export class UserService {
       count,
       page,
       limit,
-    }
+    };
   }
 
   async createUser(dto: SignUpDto): Promise<User> {
-
     const randomNumber = Math.floor(Math.random() * 100000);
     const emailVerificationCode = randomNumber.toString().padStart(5, '0');
 
-    await this.emailService.sendEmail(dto.email, 'Verificación de correo', `<p>Tu código de verificación es: ${emailVerificationCode}<p>`);
+    await this.emailService.sendEmail(
+      dto.email,
+      'Verificación de correo',
+      `<p>Tu código de verificación es: ${emailVerificationCode}<p>`,
+    );
     const user = new User();
     user.email = dto.email;
     user.password = dto.password;
@@ -147,7 +150,9 @@ export class UserService {
   }
 
   async getUserWithUnselectableFields(email: string) {
-    const user = await this.userRepository.createQueryBuilder('user').where('user.email = :email', { email })
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
       .addSelect('user.password')
       .addSelect('user.emailCode')
       .addSelect('user.emailCodeCreatedAt')
@@ -155,11 +160,10 @@ export class UserService {
     return user;
   }
 
-
   async getVerificationCode(email: string) {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .addSelect('user.emailCode') // 👈 con esto incluís el campo
+      .addSelect('user.emailCode')
       .where('user.email = :email', { email })
       .getOne();
     return user;
@@ -225,6 +229,13 @@ export class UserService {
     }
   }
 
+  async changeUserAccountStatus(user: User, status: AccountStatus): Promise<User> {
+    user.status = status;
+    return this.userRepository.save(user);
+  }
 
-
+  async promoteUserToAdmin(user: User): Promise<User> {
+    user.role = Roles.ADMIN;
+    return this.userRepository.save(user);
+  }
 }

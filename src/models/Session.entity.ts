@@ -23,5 +23,4 @@ export class Session extends BaseEntity {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
   user: User;
-
 }

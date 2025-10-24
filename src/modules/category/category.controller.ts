@@ -1,4 +1,18 @@
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
@@ -11,10 +25,9 @@ import { UploadInterceptor } from 'src/infrastructure/interceptors/upload.interc
 import { CATEGORY_ICON_PATH } from 'src/infrastructure/utils/upload-paths';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
-
 @Controller('category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
   @Get('')
   async getCategories() {
@@ -67,7 +80,10 @@ export class CategoryController {
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  async updateCategory(@Param('id', new ParseUUIDPipe()) id: string, @Body() { name }: { name: string }) {
+  async updateCategory(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() { name }: { name: string },
+  ) {
     const category = await this.categoryService.updateCategory(id, name);
     return { ok: true, data: category };
   }
@@ -75,7 +91,10 @@ export class CategoryController {
   @Put('subcategories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  async updateSubcategory(@Param('id', new ParseUUIDPipe()) id: string, @Body() { name }: { name: string }) {
+  async updateSubcategory(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() { name }: { name: string },
+  ) {
     const subcategory = await this.categoryService.updateSubcategory(id, name);
     return { ok: true, data: subcategory };
   }
@@ -98,7 +117,7 @@ export class CategoryController {
 
   @Put(':id/icon')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(UploadInterceptor(CATEGORY_ICON_PATH, ['jpg', 'png', "svg"]))
+  @UseInterceptors(UploadInterceptor(CATEGORY_ICON_PATH, ['jpg', 'png', 'svg']))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,

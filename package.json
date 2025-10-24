@@ -16,8 +16,8 @@
     "migration:generate": "pnpm run typeorm migration:generate src/database/migrations/${MIGRATION_NAME} -d src/config/data-source.ts",
     "migration:run": "pnpm run typeorm migration:run -d src/config/data-source.ts",
     "migration:revert": "pnpm run typeorm migration:revert -d src/config/data-source.ts",
-    "lint": "eslint 'src/**/*.{ts,js}' --max-warnings=0",
-    "lint:fix": "eslint 'src/**/*.{ts,js}' --fix",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint src --ext .ts,.js --fix",
     "format": "prettier --write 'src/**/*.{ts,js,json,md}'"
   },
   "dependencies": {
@@ -82,7 +82,8 @@
     "ts-loader": "^9.5.4",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.46.2"
   },
   "jest": {
     "moduleFileExtensions": [

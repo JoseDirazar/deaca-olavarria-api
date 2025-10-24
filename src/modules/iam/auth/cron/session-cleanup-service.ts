@@ -6,21 +6,21 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class SessionCleanupService {
-    private readonly logger = new Logger(SessionCleanupService.name);
+  private readonly logger = new Logger(SessionCleanupService.name);
 
-    constructor(
-        @InjectRepository(Session)
-        private readonly sessionRepository: Repository<Session>,
-    ) { }
+  constructor(
+    @InjectRepository(Session)
+    private readonly sessionRepository: Repository<Session>,
+  ) {}
 
-    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-    async handleExpiredSessions() {
-        const result = await this.sessionRepository
-            .createQueryBuilder()
-            .delete()
-            .where('expired_at < NOW()')
-            .execute();
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleExpiredSessions() {
+    const result = await this.sessionRepository
+      .createQueryBuilder()
+      .delete()
+      .where('expired_at < NOW()')
+      .execute();
 
-        this.logger.log(`🧹 Eliminadas ${result.affected} sesiones expiradas`);
-    }
+    this.logger.log(`🧹 Eliminadas ${result.affected} sesiones expiradas`);
+  }
 }

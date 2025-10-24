@@ -1,65 +1,60 @@
-import { Category } from "@models/Category.entity";
-import { Subcategory } from "@models/Subcategory.entity";
-import { IsArray, IsEmail, IsNotEmpty, IsString, IsUrl, Length } from "class-validator";
+import { Category } from '@models/Category.entity';
+import { Subcategory } from '@models/Subcategory.entity';
+import { IsArray, IsEmail, IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
 
 export class EstablishmentDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string;
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
+  @IsString()
+  @IsNotEmpty()
+  address: string;
 
-    @IsString()
-    @IsNotEmpty()
-    address: string;
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    phone: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
+  @Length(255)
+  website: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @IsEmail()
-    email: string;
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @IsUrl()
-    @Length(255)
-    website: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
+  @Length(255)
+  instagram: string;
 
-    @IsString()
-    @IsNotEmpty()
-    description: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
+  @Length(255)
+  facebook: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @IsUrl()
-    @Length(255)
-    instagram: string;
+  @IsString()
+  @IsNotEmpty()
+  latitude: string;
 
+  @IsString()
+  @IsNotEmpty()
+  longitude: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @IsUrl()
-    @Length(255)
-    facebook: string;
+  @IsNotEmpty()
+  @IsArray()
+  categories: Category[];
 
-
-    @IsString()
-    @IsNotEmpty()
-    latitude: string;
-
-
-    @IsString()
-    @IsNotEmpty()
-    longitude: string;
-
-    @IsNotEmpty()
-    @IsArray()
-    categories: Category[];
-
-    @IsNotEmpty()
-    @IsArray()
-    subcategories: Subcategory[];
-}   
+  @IsNotEmpty()
+  @IsArray()
+  subcategories: Subcategory[];
+}

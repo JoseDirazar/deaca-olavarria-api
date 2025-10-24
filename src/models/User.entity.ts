@@ -7,17 +7,20 @@ import { Review } from './Review.entity';
 import { Establishment } from './Establishment.entity';
 import * as argon2 from 'argon2';
 
-@Entity({ name: "user" })
+export enum AccountStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  PENDING = 'PENDING',
+}
+
+@Entity({ name: 'user' })
 export class User extends BaseEntity {
   @Index({ unique: true })
   @Column({ type: 'varchar', length: 255, nullable: false })
   email: string;
 
-  @Column({ type: 'boolean', default: false, })
-  banned: boolean;
-
-  @Column({ type: 'boolean', default: false, })
-  emailVerified: boolean;
+  @Column({ type: 'enum', enum: AccountStatus, default: AccountStatus.PENDING })
+  status: AccountStatus;
 
   @Column({ type: 'varchar', length: 128, nullable: false, select: false })
   password: string;

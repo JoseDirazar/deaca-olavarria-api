@@ -12,7 +12,7 @@ export class CategoryService {
     @InjectRepository(Category) private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Subcategory) private readonly subcategoryRepository: Repository<Subcategory>,
     private readonly uploadService: UploadService,
-  ) { }
+  ) {}
 
   async findOne(id: string) {
     return await this.categoryRepository.findOne({ where: { id } });
@@ -75,7 +75,10 @@ export class CategoryService {
       const oldIconPath = this.uploadService.resolveUploadPath('category', category.icon);
       await this.uploadService.deleteFileIfExists(oldIconPath);
     }
-    const normalizedPath = await this.uploadService.normalizeImage(icon, { width: 120, height: 120 });
+    const normalizedPath = await this.uploadService.normalizeImage(icon, {
+      width: 120,
+      height: 120,
+    });
     category.icon = normalizedPath;
     return await this.categoryRepository.save(category);
   }

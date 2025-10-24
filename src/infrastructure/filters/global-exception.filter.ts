@@ -1,4 +1,11 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 
 interface CustomException {
@@ -18,7 +25,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     this.logger.error(exception);
-    const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status =
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
     const raisedExceptionResponse = (
       exception instanceof HttpException
         ? exception.getResponse()
@@ -29,7 +37,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
           }
     ) as CustomException;
 
-    const message = typeof raisedExceptionResponse === 'string' ? raisedExceptionResponse : raisedExceptionResponse.message;
+    const message =
+      typeof raisedExceptionResponse === 'string'
+        ? raisedExceptionResponse
+        : raisedExceptionResponse.message;
     const error = raisedExceptionResponse.error;
     const path = request.path;
 

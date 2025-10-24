@@ -6,11 +6,7 @@ import { User } from '@models/User.entity';
 import { Session } from '@models/Session.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Session]),
-    AuthModule,
-    UserModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User, Session]), AuthModule, UserModule],
   exports: [AuthModule, UserModule],
 })
-export class IamModule { }
+export class IamModule {}

@@ -1,16 +1,11 @@
-import {
-  Inject,
-  Injectable,
-  UnauthorizedException,
-  Logger,
-} from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SessionService } from './session.service';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { User } from '@models/User.entity';
 import * as argon2 from 'argon2';
-import { OAuth2Client, TokenPayload, } from 'google-auth-library';
+import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { UserService } from '../user/user.service';
 import { AuthJwtPayload } from './types/auth-jwtPayload';
 import refreshJwtConfig from 'src/config/refresh-jwt.config';
@@ -25,11 +20,9 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @Inject(refreshJwtConfig.KEY)
-    private readonly refreshJwtConfiguration: ConfigType<
-      typeof refreshJwtConfig
-    >,
+    private readonly refreshJwtConfiguration: ConfigType<typeof refreshJwtConfig>,
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   async generateAccessAndRefreshToken(req: Request, user: User) {
     const session = await this.sessionService.createSession(req, user);
@@ -39,10 +32,7 @@ export class AuthService {
       this.jwtService.signAsync(payload, this.refreshJwtConfiguration),
     ]);
     const hashedRefreshToken = await argon2.hash(refreshToken);
-    await this.sessionService.updateHashedRefreshToken(
-      session.id,
-      hashedRefreshToken,
-    );
+    await this.sessionService.updateHashedRefreshToken(session.id, hashedRefreshToken);
     return { accessToken, refreshToken };
   }
 
@@ -55,8 +45,7 @@ export class AuthService {
   }
 
   async login(req: Request, user: User) {
-    const { accessToken, refreshToken } =
-      await this.generateAccessAndRefreshToken(req, user);
+    const { accessToken, refreshToken } = await this.generateAccessAndRefreshToken(req, user);
     return { id: user.id, accessToken, refreshToken };
   }
 
@@ -91,8 +80,9 @@ export class AuthService {
   }
 
   async validateRefreshJwtPayload(payload: AuthJwtPayload, refreshToken?: string) {
-    const session = await this.getSession(payload.sessionId)
-    if (!session || session.user.id !== payload.sub || !refreshToken || !session.refreshToken) throw new UnauthorizedException('Unauthorized');
+    const session = await this.getSession(payload.sessionId);
+    if (!session || session.user.id !== payload.sub || !refreshToken || !session.refreshToken)
+      throw new UnauthorizedException('Unauthorized');
     const isRefreshTokenMatch = await argon2.verify(session?.refreshToken, refreshToken);
     if (!isRefreshTokenMatch) throw new UnauthorizedException('Refresh token not valid');
     return { id: payload.sub, sessionId: payload.sessionId, role: session.user.role };

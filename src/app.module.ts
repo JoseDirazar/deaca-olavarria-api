@@ -20,9 +20,7 @@ import { AppReviewModule } from '@modules/app-review/app-review.module';
   imports: [
     ConfigModule.forRoot(ConfigModuleOptions),
     JwtGlobalModule,
-    ServeStaticModule.forRoot(
-      ...serveStaticModuleOptions(__dirname)
-    ),
+    ServeStaticModule.forRoot(...serveStaticModuleOptions(__dirname)),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -39,4 +37,4 @@ import { AppReviewModule } from '@modules/app-review/app-review.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

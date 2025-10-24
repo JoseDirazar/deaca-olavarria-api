@@ -29,8 +29,19 @@ import { ScheduleModule } from '@nestjs/schedule';
     ConfigModule.forFeature(refreshJwtConfig),
     ScheduleModule.forRoot(),
   ],
-  providers: [UserService, AuthService, SessionService, JwtStrategy, RolesGuard, LocalStrategy, RefreshJwtStrategy, RefreshAuthGuard, JwtAuthGuard, SessionCleanupService],
+  providers: [
+    UserService,
+    AuthService,
+    SessionService,
+    JwtStrategy,
+    RolesGuard,
+    LocalStrategy,
+    RefreshJwtStrategy,
+    RefreshAuthGuard,
+    JwtAuthGuard,
+    SessionCleanupService,
+  ],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
-export class AuthModule { }
+export class AuthModule {}

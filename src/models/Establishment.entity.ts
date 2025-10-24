@@ -1,13 +1,27 @@
 import { BaseEntity } from 'src/infrastructure/models/Base.entity';
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Category } from './Category.entity';
 import { Subcategory } from './Subcategory.entity';
 import { Image } from './Image.entity';
 import { Review } from './Review.entity';
 import { User } from './User.entity';
 
+export enum EstablishmentStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  PENDING = 'PENDING',
+}
 @Entity({ name: 'establishment' })
 export class Establishment extends BaseEntity {
+  @Index({ unique: true })
   @Column({ type: 'varchar', length: 255, nullable: true })
   name: string;
 
@@ -41,8 +55,8 @@ export class Establishment extends BaseEntity {
   @Column({ nullable: true, type: 'varchar', length: 255 })
   longitude: string;
 
-  @Column({ default: false, type: 'bool' })
-  verified: boolean;
+  @Column({ type: 'enum', enum: EstablishmentStatus, default: EstablishmentStatus.PENDING })
+  status: EstablishmentStatus;
 
   @Column({ default: false, type: 'bool' })
   isComplete: boolean;
@@ -82,4 +96,3 @@ export class Establishment extends BaseEntity {
   @ManyToOne(() => User, (user) => user.establishments, { cascade: true })
   user: User;
 }
-

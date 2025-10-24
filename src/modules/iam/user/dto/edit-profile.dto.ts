@@ -1,10 +1,5 @@
-import {
-  IsString,
-  Length,
-  IsOptional,
-  IsBoolean,
-  IsEnum,
-} from 'class-validator';
+import { AccountStatus } from '@models/User.entity';
+import { IsString, Length, IsOptional, IsEnum } from 'class-validator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 
 export class EditProfileDto {
@@ -26,9 +21,9 @@ export class EditProfileDto {
   @IsOptional()
   avatar?: string;
 
-  @IsBoolean()
+  @IsEnum(AccountStatus)
   @IsOptional()
-  emailVerified?: boolean;
+  status?: AccountStatus;
 
   @IsString()
   @IsOptional()

@@ -10,7 +10,7 @@ export class SessionService {
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   async createSession(req: Request, user: User): Promise<Session> {
     const jwtTokenRefreshExpiration: number =
@@ -31,13 +31,18 @@ export class SessionService {
       req.socket?.remoteAddress ||
       req.ip ||
       ''
-    ).toString().split(',')[0].trim();
+    )
+      .toString()
+      .split(',')[0]
+      .trim();
 
     // Extraer browser
-    session.browser = userAgent.match(/(chrome|firefox|safari|edge|opera|brave)/i)?.[0] || 'Unknown';
+    session.browser =
+      userAgent.match(/(chrome|firefox|safari|edge|opera|brave)/i)?.[0] || 'Unknown';
 
     // Extraer OS (corregido iOS)
-    session.operatingSystem = userAgent.match(/(windows|mac os x|linux|android|iphone|ipad)/i)?.[0] || 'Unknown';
+    session.operatingSystem =
+      userAgent.match(/(windows|mac os x|linux|android|iphone|ipad)/i)?.[0] || 'Unknown';
 
     session.expiredAt = expiredAt;
 

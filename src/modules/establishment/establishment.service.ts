@@ -1,18 +1,18 @@
-import { Establishment } from '@models/Establishment.entity';
+import { Establishment, EstablishmentStatus } from '@models/Establishment.entity';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { EstablishmentDto } from './dto/establishment.dto';
 import { Image } from '@models/Image.entity';
-import { User } from '@models/User.entity';
+import { AccountStatus, User } from '@models/User.entity';
 import { EstablishmentMapper } from './mapper/establishment-mapper';
 import { join } from 'path';
 import * as fs from 'fs/promises';
 import { Review } from '@models/Review.entity';
 import { ReviewDto } from './dto/review.dto';
 import { UploadService } from '@modules/upload/upload.service';
-import { ESTABLISHMENT_AVATAR_PATH, ESTABLISHMENT_IMAGE_PATH } from 'src/infrastructure/utils/upload-paths';
+
 
 @Injectable()
 export class EstablishmentService {
@@ -43,7 +43,7 @@ export class EstablishmentService {
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
     establishment.isComplete = this.computeIsComplete(establishment);
     await this.establishmentRepository.save(establishment);
-    return establishment.isComplete
+    return establishment.isComplete;
   }
 
   async getPaginatedEstablishments(params: EstablishmentsPaginationQueryParamsDto) {
@@ -57,10 +57,14 @@ export class EstablishmentService {
     const subcategories = params['subcategories[]'];
     const search = params['search'];
     const normalizedCategories = categories
-      ? (Array.isArray(categories) ? categories : [categories])
+      ? Array.isArray(categories)
+        ? categories
+        : [categories]
       : null;
     const normalizedSubcategories = subcategories
-      ? (Array.isArray(subcategories) ? subcategories : [subcategories])
+      ? Array.isArray(subcategories)
+        ? subcategories
+        : [subcategories]
       : null;
 
     const establishmentsQueryBuilder = this.establishmentRepository
@@ -72,7 +76,7 @@ export class EstablishmentService {
         'establishments.description',
         'establishments.avatar',
         'establishments.isComplete',
-        'establishments.verified',
+        'establishments.status',
         'establishments.createdAt',
         'establishments.updatedAt',
         'establishments.latitude',
@@ -87,7 +91,7 @@ export class EstablishmentService {
         'EXISTS (SELECT 1 FROM establishment_categories_category ecc ' +
         'JOIN category c ON ecc.category_id = c.id ' +
         'WHERE ecc.establishment_id = establishments.id AND c.name IN (:...categories))',
-        { categories: normalizedCategories }
+        { categories: normalizedCategories },
       );
     }
 
@@ -97,7 +101,7 @@ export class EstablishmentService {
         'EXISTS (SELECT 1 FROM establishment_categories_subcategory ecs ' +
         'JOIN subcategory s ON ecs.subcategory_id = s.id ' +
         'WHERE ecs.establishment_id = establishments.id AND s.name IN (:...subcategories))',
-        { subcategories: normalizedSubcategories }
+        { subcategories: normalizedSubcategories },
       );
     }
 
@@ -105,7 +109,7 @@ export class EstablishmentService {
     if (search && search.trim().length > 0) {
       establishmentsQueryBuilder.andWhere(
         'establishments.name ILIKE :search OR establishments.name ILIKE :search',
-        { search: `%${search.trim()}%` }
+        { search: `%${search.trim()}%` },
       );
     }
 
@@ -128,19 +132,14 @@ export class EstablishmentService {
       limit,
       total,
       establishments,
-      page
+      page,
     };
   }
 
   async getEstablishmentById(id: string) {
     return this.establishmentRepository.findOne({
       where: { id },
-      relations: [
-        'categories',
-        'subcategories',
-        'images',
-        'user'
-      ]
+      relations: ['categories', 'subcategories', 'images', 'user'],
     });
   }
 
@@ -150,7 +149,10 @@ export class EstablishmentService {
   }
 
   async updateEstablishment(establishment: Establishment, establishmentDto: EstablishmentDto) {
-    const updatedEstablishment = EstablishmentMapper.dtoToEstablishment(establishmentDto, establishment);
+    const updatedEstablishment = EstablishmentMapper.dtoToEstablishment(
+      establishmentDto,
+      establishment,
+    );
     return await this.establishmentRepository.save(updatedEstablishment);
   }
 
@@ -179,10 +181,10 @@ export class EstablishmentService {
     return await this.establishmentRepository.remove(establishment);
   }
 
-  async setVerified(id: string, verified: boolean) {
+  async changeStatus(id: string, status: EstablishmentStatus) {
     const establishment = await this.establishmentRepository.findOne({ where: { id } });
     if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    establishment.verified = Boolean(verified);
+    establishment.status = status;
     return await this.establishmentRepository.save(establishment);
   }
 
@@ -212,7 +214,11 @@ export class EstablishmentService {
 
   async updateAvatar(establishment: Establishment, newAvatarFileName: string) {
     if (establishment.avatar) {
-      const oldAvatarPath = this.uploadService.resolveUploadPath('establishment', "logo", establishment.avatar);
+      const oldAvatarPath = this.uploadService.resolveUploadPath(
+        'establishment',
+        'logo',
+        establishment.avatar,
+      );
       await this.uploadService.deleteFileIfExists(oldAvatarPath);
     }
     const normalizedPath = await this.uploadService.normalizeImage(newAvatarFileName);
@@ -233,12 +239,12 @@ export class EstablishmentService {
           id: true,
           firstName: true,
           lastName: true,
-          avatar: true
+          avatar: true,
         },
         establishment: {
           id: true,
-        }
-      }
+        },
+      },
     });
   }
 
@@ -271,7 +277,10 @@ export class EstablishmentService {
   }
 
   async getReviewById(id: string) {
-    return await this.reviewRepository.findOne({ where: { id }, relations: ['reviewer', 'establishment'] });
+    return await this.reviewRepository.findOne({
+      where: { id },
+      relations: ['reviewer', 'establishment'],
+    });
   }
 
   private async updateEstablishmentRating(establishment: Establishment) {
@@ -285,9 +294,13 @@ export class EstablishmentService {
   }
 
   async deleteImage(establishment: Establishment, imageId: string) {
-    const image = await this.imageRepository.findOne({ where: { id: imageId }, relations: ['establishment'] });
+    const image = await this.imageRepository.findOne({
+      where: { id: imageId },
+      relations: ['establishment'],
+    });
     if (!image) throw new NotFoundException('Imagen no encontrada');
-    if (image.establishment.id !== establishment.id) throw new UnauthorizedException('No tienes permiso para eliminar esta imagen');
+    if (image.establishment.id !== establishment.id)
+      throw new UnauthorizedException('No tienes permiso para eliminar esta imagen');
     const imagePath = this.uploadService.resolveUploadPath('establishment', image.fileName);
     await this.uploadService.deleteFileIfExists(imagePath);
     return await this.imageRepository.remove(image);

@@ -1,7 +1,19 @@
-import { Body, Controller, Get, Put, UploadedFile, UseInterceptors, UseGuards, Post, NotFoundException, Query, BadRequestException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Put,
+  UploadedFile,
+  UseInterceptors,
+  UseGuards,
+  Post,
+  NotFoundException,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 
-import { User } from '@models/User.entity';
+import { AccountStatus, User } from '@models/User.entity';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,7 +32,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async me(@GetUser("id") userId: string) {
+  async me(@GetUser('id') userId: string) {
     const userFound = await this.userService.findById(userId);
     if (!userFound) throw new NotFoundException('Usuario no encontrado');
     return { data: userFound };
@@ -29,8 +41,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.ADMIN)
   @Get('')
-  async getUsers(@Query() params: GetUsersPaginatedQueryParamsDto): Promise<PaginatedResponse<User>> {
-    const { users, count, page, limit } = await this.userService.getUsers(params)
+  async getUsers(
+    @Query() params: GetUsersPaginatedQueryParamsDto,
+  ): Promise<PaginatedResponse<User>> {
+    const { users, count, page, limit } = await this.userService.getUsers(params);
     return {
       data: users,
       meta: {
@@ -38,14 +52,17 @@ export class UserController {
         itemsPerPage: limit,
         currentPage: page,
         totalItems: count,
-        totalPages: Math.ceil(count / limit)
-      }
-    }
+        totalPages: Math.ceil(count / limit),
+      },
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('')
-  async editProfile(@GetUser("id") userId: string, @Body() editProfileDto: EditProfileDto): Promise<ApiResponse<User>> {
+  async editProfile(
+    @GetUser('id') userId: string,
+    @Body() editProfileDto: EditProfileDto,
+  ): Promise<ApiResponse<User>> {
     const userFound = await this.userService.findById(userId);
     if (!userFound) throw new NotFoundException('Usuario no encontrado');
     const usersaved = await this.userService.editProfile(userFound, editProfileDto);
@@ -54,7 +71,7 @@ export class UserController {
 
   @Put('avatar')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(UploadInterceptor(USER_AVATAR_PATH, ['jpg', 'png', "gif", "jpeg"]))
+  @UseInterceptors(UploadInterceptor(USER_AVATAR_PATH, ['jpg', 'png', 'gif', 'jpeg']))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @GetUser('id') userId: string,
@@ -79,4 +96,23 @@ export class UserController {
     return { data: userSaved };
   }
 
+  @Put('status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  async changeUserAccountStatus(@Body('email') email: string, @Body('status') status: AccountStatus): Promise<ApiResponse<User>> {
+    const user = await this.userService.userExistByEmail(email);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    await this.userService.changeUserAccountStatus(user, status);
+    return { message: `Usuario ${user.email}: ${status}` };
+  }
+
+  @Put('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  async promoteUserToAdmin(@Body('email') email: string): Promise<ApiResponse<void>> {
+    const user = await this.userService.userExistByEmail(email);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    await this.userService.promoteUserToAdmin(user);
+    return { message: `Usuario ${user.email} es ahora administrador` };
+  }
 }

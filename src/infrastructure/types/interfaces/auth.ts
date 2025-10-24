@@ -1,5 +1,5 @@
-import { User } from "@models/User.entity";
-import { Session } from "inspector";
+import { User } from '@models/User.entity';
+import { Session } from 'inspector';
 
 export class ValidatedSession {
   user: User;

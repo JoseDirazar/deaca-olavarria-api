@@ -16,15 +16,23 @@ import refreshJwtConfig from 'src/config/refresh-jwt.config';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  providers: [UserService, AuthService, JwtService, SessionService, JwtAuthGuard, RefreshJwtStrategy, RefreshAuthGuard],
+  providers: [
+    UserService,
+    AuthService,
+    JwtService,
+    SessionService,
+    JwtAuthGuard,
+    RefreshJwtStrategy,
+    RefreshAuthGuard,
+  ],
   controllers: [UserController],
   imports: [
     TypeOrmModule.forFeature([User, Session]),
     forwardRef(() => AuthModule),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
-    ConfigModule.forFeature(refreshJwtConfig)
+    ConfigModule.forFeature(refreshJwtConfig),
   ],
   exports: [UserService],
 })
-export class UserModule { }
+export class UserModule {}
