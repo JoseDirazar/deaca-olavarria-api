@@ -9,7 +9,6 @@ import {
   Post,
   Put,
   Query,
-  UnsupportedMediaTypeException,
   UploadedFile,
   UploadedFiles,
   UseGuards,
@@ -23,7 +22,7 @@ import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { Patch, Delete } from '@nestjs/common';
-import { AccountStatus, User } from '@models/User.entity';
+import { User } from '@models/User.entity';
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 import { Establishment, EstablishmentStatus } from '@models/Establishment.entity';
 import { ReviewDto } from './dto/review.dto';
@@ -32,7 +31,6 @@ import {
   UploadInterceptor,
 } from 'src/infrastructure/interceptors/upload.interceptor';
 import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
-import path from 'path';
 import { UploadService } from '@modules/upload/upload.service';
 import {
   ESTABLISHMENT_AVATAR_PATH,
@@ -44,10 +42,10 @@ export class EstablishmentController {
   constructor(
     private readonly establishmentService: EstablishmentService,
     private readonly uploadService: UploadService,
-  ) { }
+  ) {}
 
   @Get('')
-  async getPaginatedEstablishments(@Query() params: EstablishmentsPaginationQueryParamsDto,) {
+  async getPaginatedEstablishments(@Query() params: EstablishmentsPaginationQueryParamsDto) {
     const { page, establishments, limit, total } =
       await this.establishmentService.getPaginatedEstablishments(params);
 
@@ -129,8 +127,8 @@ export class EstablishmentController {
   ) {
     const updatedEstablishment = await this.establishmentService.changeStatus(id, status);
     return {
-      message: `Emprendimiento ${updatedEstablishment.name}: ${status}`
-    }
+      message: `Emprendimiento ${updatedEstablishment.name}: ${status}`,
+    };
   }
 
   // Upload establishment avatar (owner)

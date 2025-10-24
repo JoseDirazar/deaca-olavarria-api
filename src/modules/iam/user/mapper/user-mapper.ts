@@ -50,7 +50,6 @@ export class UserMapper {
     user.email = payload.email!;
     user.firstName = payload.given_name!;
     user.lastName = payload.family_name!;
-    user.status = AccountStatus.PENDING;
     user.password = await this.generateRandomPassword();
     return user;
   }

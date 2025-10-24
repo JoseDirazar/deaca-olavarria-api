@@ -13,7 +13,6 @@ import { Review } from '@models/Review.entity';
 import { ReviewDto } from './dto/review.dto';
 import { UploadService } from '@modules/upload/upload.service';
 
-
 @Injectable()
 export class EstablishmentService {
   constructor(
@@ -24,7 +23,7 @@ export class EstablishmentService {
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
     private readonly uploadService: UploadService,
-  ) { }
+  ) {}
 
   private computeIsComplete(est: Establishment): boolean {
     const hasAvatar = Boolean(est.avatar && est.avatar.trim().length > 0);
@@ -89,8 +88,8 @@ export class EstablishmentService {
     if (normalizedCategories && normalizedCategories.length > 0) {
       establishmentsQueryBuilder.andWhere(
         'EXISTS (SELECT 1 FROM establishment_categories_category ecc ' +
-        'JOIN category c ON ecc.category_id = c.id ' +
-        'WHERE ecc.establishment_id = establishments.id AND c.name IN (:...categories))',
+          'JOIN category c ON ecc.category_id = c.id ' +
+          'WHERE ecc.establishment_id = establishments.id AND c.name IN (:...categories))',
         { categories: normalizedCategories },
       );
     }
@@ -99,8 +98,8 @@ export class EstablishmentService {
     if (normalizedSubcategories && normalizedSubcategories.length > 0) {
       establishmentsQueryBuilder.andWhere(
         'EXISTS (SELECT 1 FROM establishment_categories_subcategory ecs ' +
-        'JOIN subcategory s ON ecs.subcategory_id = s.id ' +
-        'WHERE ecs.establishment_id = establishments.id AND s.name IN (:...subcategories))',
+          'JOIN subcategory s ON ecs.subcategory_id = s.id ' +
+          'WHERE ecs.establishment_id = establishments.id AND s.name IN (:...subcategories))',
         { subcategories: normalizedSubcategories },
       );
     }
