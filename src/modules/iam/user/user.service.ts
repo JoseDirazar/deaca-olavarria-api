@@ -136,10 +136,29 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
+<<<<<<< Updated upstream
   async createWithGoogle(googleUser: TokenPayload): Promise<User> {
     const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture!);
     const user = await UserMapper.createUserWithGooglePayload(googleUser);
     user.avatar = avatarFilePath!;
+=======
+  async changeAvatar(userId: string, avatar: string): Promise<User> {
+    const user = await this.findById(userId);
+    user.avatar = avatar;
+    return this.userRepository.save(user);
+  }
+
+  async createWithGoogle(email: string): Promise<User> {
+    const password = this.generateRandomPassword();
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = new User();
+    user.email = email;
+    user.password = hashedPassword;
+    user.emailVerified = true;
+
+>>>>>>> Stashed changes
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
