@@ -1,5 +1,4 @@
 import { Establishment } from '@models/Establishment.entity';
-import { EstablishmentDto } from '../dto/establishment.dto';
 
 export class EstablishmentMapper {
   static dtoToEstablishment(

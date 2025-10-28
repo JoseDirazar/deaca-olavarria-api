@@ -136,7 +136,6 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-<<<<<<< Updated upstream
   async createWithGoogle(googleUser: TokenPayload): Promise<User> {
     const user = await UserMapper.createUserWithGooglePayload(googleUser);
     console.log('google user', user);

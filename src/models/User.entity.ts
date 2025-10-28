@@ -3,12 +3,9 @@ import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../infrastructure/models/Base.entity';
 import { Session } from './Session.entity';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
-<<<<<<< Updated upstream
 import { Review } from './Review.entity';
 import { Establishment } from './Establishment.entity';
 import * as argon2 from 'argon2';
-=======
->>>>>>> Stashed changes
 
 export enum AccountStatus {
   ACTIVE = 'ACTIVE',
@@ -22,13 +19,8 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: false })
   email: string;
 
-<<<<<<< Updated upstream
   @Column({ type: 'enum', enum: AccountStatus, default: AccountStatus.PENDING })
   status: AccountStatus;
-=======
-  @Column({ type: 'boolean', default: false })
-  emailVerified: boolean;
->>>>>>> Stashed changes
 
   @Column({ type: 'varchar', length: 128, nullable: false, select: false })
   password: string;
@@ -45,13 +37,8 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, default: '', nullable: true })
   lastName: string;
 
-<<<<<<< Updated upstream
   @Column({ nullable: true, type: 'timestamp', select: false })
   emailCodeCreatedAt: Date;
-=======
-  @Column({ nullable: true, type: 'timestamp' })
-  emailCodeCreateAt: Date;
->>>>>>> Stashed changes
 
   @Column({ type: 'enum', enum: Roles, default: Roles.USER })
   role: Roles;

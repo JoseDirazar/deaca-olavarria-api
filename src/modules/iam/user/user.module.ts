@@ -28,18 +28,6 @@ import { ConfigModule } from '@nestjs/config';
   controllers: [UserController],
   imports: [
     TypeOrmModule.forFeature([User, Session]),
-<<<<<<< Updated upstream
-=======
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('access_token.secret'),
-        signOptions: {
-          expiresIn: config.get<string>('access_token.expiresIn'),
-        },
-      }),
-    }),
->>>>>>> Stashed changes
     forwardRef(() => AuthModule),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
