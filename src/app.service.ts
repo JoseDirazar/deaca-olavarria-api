@@ -5,7 +5,7 @@ import { SendMessageDto } from './infrastructure/dto/send-message.dto';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly emailService: EmailService) { }
+  constructor(private readonly emailService: EmailService) {}
 
   getState(): Record<string, string> {
     return {
@@ -14,10 +14,14 @@ export class AppService {
   }
 
   async sendEmail(sendMessageDto: SendMessageDto) {
-    await this.emailService.sendEmail("jfdirazar@gmail.com", "Nuevo mensaje desde la web", `
+    await this.emailService.sendEmail(
+      'jfdirazar@gmail.com',
+      'Nuevo mensaje desde la web',
+      `
       <p>${sendMessageDto.message}</p>
       <p>${sendMessageDto.name}</p>
-      <p>${sendMessageDto.email}</p>`);
+      <p>${sendMessageDto.email}</p>`,
+    );
     return {
       message: 'Email sent',
     };

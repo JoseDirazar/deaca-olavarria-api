@@ -28,7 +28,7 @@ import { USER_AVATAR_PATH } from 'src/infrastructure/utils/upload-paths';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
@@ -99,7 +99,10 @@ export class UserController {
   @Put('status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
-  async changeUserAccountStatus(@Body('email') email: string, @Body('status') status: AccountStatus): Promise<ApiResponse<User>> {
+  async changeUserAccountStatus(
+    @Body('email') email: string,
+    @Body('status') status: AccountStatus,
+  ): Promise<ApiResponse<User>> {
     const user = await this.userService.userExistByEmail(email);
     if (!user) throw new NotFoundException('Usuario no encontrado');
     await this.userService.changeUserAccountStatus(user, status);

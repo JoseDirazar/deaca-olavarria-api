@@ -11,15 +11,17 @@ import { User } from '@models/User.entity';
 import { EmailModule } from '@modules/email/email.module';
 import { EmailService } from '@modules/email/email.service';
 import { Review } from '@models/Review.entity';
+import { AnalyticsModule } from '@modules/analytics/analytics.module';
 
 @Module({
-  controllers: [EstablishmentController],
-  providers: [EstablishmentService, UserService, EmailService],
   imports: [
     TypeOrmModule.forFeature([Establishment, Image, User, Review]),
     AuthModule,
     UserModule,
     EmailModule,
+    AnalyticsModule,
   ],
+  providers: [EstablishmentService, UserService, EmailService],
+  controllers: [EstablishmentController],
 })
 export class EstablishmentModule {}

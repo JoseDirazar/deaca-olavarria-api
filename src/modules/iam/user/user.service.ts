@@ -22,7 +22,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     private readonly emailService: EmailService,
     private readonly uploadService: UploadService,
-  ) { }
+  ) {}
 
   async getUsers(params: GetUsersPaginatedQueryParamsDto) {
     const { page = 1, limit = 10, role, email, search, sortBy, sortOrder } = params;

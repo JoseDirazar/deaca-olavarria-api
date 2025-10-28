@@ -14,14 +14,13 @@ export default [
         sourceType: 'module',
         ecmaVersion: 'latest',
       },
-      ecmaVersion: 2021,
-      sourceType: 'module',
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       prettier: prettierPlugin,
     },
     rules: {
+      ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -39,7 +38,6 @@ export default [
           semi: true,
         },
       ],
-      'no-console': 'off',
     },
   },
 ];

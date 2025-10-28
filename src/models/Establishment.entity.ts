@@ -1,13 +1,5 @@
 import { BaseEntity } from 'src/infrastructure/models/Base.entity';
-import {
-  Column,
-  Entity,
-  Index,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { Category } from './Category.entity';
 import { Subcategory } from './Subcategory.entity';
 import { Image } from './Image.entity';

@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -30,12 +31,12 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get('')
-  async getCategories() {
-    const categories = await this.categoryService.getCategories();
+  async getCategories(@Query() query: { exclude?: string[]; select?: string[] }) {
+    const categories = await this.categoryService.getCategories(query);
 
     if (!categories) return new NotFoundException('No se encontraron categorias');
 
-    return { ok: true, data: categories };
+    return { data: categories };
   }
 
   @Get('subcategories')
@@ -44,7 +45,7 @@ export class CategoryController {
 
     if (!subcategories) return new NotFoundException('No se encontraron subcategorias');
 
-    return { ok: true, data: subcategories };
+    return { data: subcategories };
   }
 
   @Get(':id/subcategories')
@@ -53,7 +54,7 @@ export class CategoryController {
 
     if (!subcategories) return new NotFoundException('No se encontraron subcategorias');
 
-    return { ok: true, data: subcategories };
+    return { data: subcategories };
   }
 
   @Post('')
@@ -63,7 +64,7 @@ export class CategoryController {
     if (!categoryDto) return new BadRequestException('La categoria es requerida');
     const category = await this.categoryService.createCategory(categoryDto);
     if (!category) return new NotFoundException('No se encontro la categoria');
-    return { ok: true, data: category };
+    return { data: category };
   }
 
   @Post('subcategories')
@@ -74,7 +75,7 @@ export class CategoryController {
     if (!categoryId) return new BadRequestException('El id de la categoria es requerido');
     const subcategory = await this.categoryService.createSubcategory(categoryId, name);
     if (!subcategory) return new NotFoundException('No se encontro la subcategoria');
-    return { ok: true, data: subcategory };
+    return { data: subcategory };
   }
 
   @Put(':id')
@@ -85,7 +86,7 @@ export class CategoryController {
     @Body() { name }: { name: string },
   ) {
     const category = await this.categoryService.updateCategory(id, name);
-    return { ok: true, data: category };
+    return { data: category };
   }
 
   @Put('subcategories/:id')
@@ -96,7 +97,7 @@ export class CategoryController {
     @Body() { name }: { name: string },
   ) {
     const subcategory = await this.categoryService.updateSubcategory(id, name);
-    return { ok: true, data: subcategory };
+    return { data: subcategory };
   }
 
   @Delete(':id')

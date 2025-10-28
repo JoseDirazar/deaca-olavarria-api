@@ -9,12 +9,13 @@ import {
   Post,
   Put,
   Query,
-  UnsupportedMediaTypeException,
+  Req,
   UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { EstablishmentService } from './establishment.service';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
@@ -23,7 +24,7 @@ import { GetUser } from 'src/infrastructure/decorators/get-user.decorator';
 import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { Patch, Delete } from '@nestjs/common';
-import { AccountStatus, User } from '@models/User.entity';
+import { User } from '@models/User.entity';
 import { ApiResponse } from 'src/infrastructure/types/interfaces/api-response.interface';
 import { Establishment, EstablishmentStatus } from '@models/Establishment.entity';
 import { ReviewDto } from './dto/review.dto';
@@ -32,22 +33,23 @@ import {
   UploadInterceptor,
 } from 'src/infrastructure/interceptors/upload.interceptor';
 import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
-import path from 'path';
 import { UploadService } from '@modules/upload/upload.service';
 import {
   ESTABLISHMENT_AVATAR_PATH,
   ESTABLISHMENT_IMAGE_PATH,
 } from 'src/infrastructure/utils/upload-paths';
+import { AnalyticsService } from '@modules/analytics/analytics.service';
 
 @Controller('establishment')
 export class EstablishmentController {
   constructor(
     private readonly establishmentService: EstablishmentService,
     private readonly uploadService: UploadService,
-  ) { }
+    private readonly analyticsService: AnalyticsService,
+  ) {}
 
   @Get('')
-  async getPaginatedEstablishments(@Query() params: EstablishmentsPaginationQueryParamsDto,) {
+  async getPaginatedEstablishments(@Query() params: EstablishmentsPaginationQueryParamsDto) {
     const { page, establishments, limit, total } =
       await this.establishmentService.getPaginatedEstablishments(params);
 
@@ -73,9 +75,19 @@ export class EstablishmentController {
   }
 
   @Get(':id')
-  async getEstablishmentById(@Param('id', new ParseUUIDPipe()) id: string) {
+  async getEstablishmentById(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: Request) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) return new NotFoundException('No se encontro el establecimiento');
+    if (!establishment) throw new NotFoundException('No se encontró el establecimiento');
+
+    // Registrar visita (sin bloquear la respuesta)
+    this.analyticsService
+      .registerVisit({
+        establishmentId: id,
+        ip: req.ip ?? '',
+        // userId: req.user?.id si hay auth
+      })
+      .catch(() => {});
+
     return { data: establishment };
   }
 
@@ -129,8 +141,8 @@ export class EstablishmentController {
   ) {
     const updatedEstablishment = await this.establishmentService.changeStatus(id, status);
     return {
-      message: `Emprendimiento ${updatedEstablishment.name}: ${status}`
-    }
+      message: `Emprendimiento ${updatedEstablishment.name}: ${status}`,
+    };
   }
 
   // Upload establishment avatar (owner)

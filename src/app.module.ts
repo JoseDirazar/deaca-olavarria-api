@@ -15,6 +15,8 @@ import { EmailModule } from '@modules/email/email.module';
 import { EventModule } from '@modules/event/event.module';
 import { typeormConfig } from './config/typeorm.config';
 import { AppReviewModule } from '@modules/app-review/app-review.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { AppReviewModule } from '@modules/app-review/app-review.module';
     UploadModule,
     EmailModule,
     AppReviewModule,
+    AnalyticsModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -7,7 +7,7 @@ import { SendMessageDto } from './infrastructure/dto/send-message.dto';
 @Controller()
 @Public()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   @NoLogging()

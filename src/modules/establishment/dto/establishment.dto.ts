@@ -22,24 +22,21 @@ export class EstablishmentDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsUrl()
-  @Length(255)
-  website: string;
-
-  @IsString()
-  @IsNotEmpty()
   description: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsUrl()
-  @Length(255)
+  @IsUrl({ max_allowed_length: 255 })
+  website: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl({ max_allowed_length: 255 })
   instagram: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsUrl()
-  @Length(255)
+  @IsUrl({ max_allowed_length: 255 })
   facebook: string;
 
   @IsString()

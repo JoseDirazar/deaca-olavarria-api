@@ -3,7 +3,7 @@ import { Subcategory } from '@models/Subcategory.entity';
 import { UploadService } from '@modules/upload/upload.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Injectable()
@@ -22,8 +22,28 @@ export class CategoryService {
     return await this.categoryRepository.findOne({ where: { name } });
   }
 
-  async getCategories() {
-    return await this.categoryRepository.find({ relations: ['subcategories'] });
+  async getCategories({ exclude, select }: { exclude?: string[]; select?: string[] }) {
+    if (select) {
+      const categories = await this.categoryRepository.find({
+        relations: ['establishments'],
+        where: {
+          name: In(select),
+        },
+      });
+      console.log('SELECT', categories);
+      return categories;
+    }
+    if (exclude) {
+      const categories = await this.categoryRepository.find({
+        relations: ['subcategories'],
+        where: {
+          name: Not(In(exclude)),
+        },
+      });
+      return categories;
+    }
+    const categories = await this.categoryRepository.find({ relations: ['subcategories'] });
+    return categories;
   }
 
   async getSubcategories() {

@@ -27,7 +27,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
-    ScheduleModule.forRoot(),
+    ScheduleModule,
   ],
   providers: [
     UserService,
