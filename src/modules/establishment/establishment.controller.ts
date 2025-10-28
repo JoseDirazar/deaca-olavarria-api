@@ -45,6 +45,7 @@ export class EstablishmentController {
   constructor(
     private readonly establishmentService: EstablishmentService,
     private readonly uploadService: UploadService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   @Get('')
