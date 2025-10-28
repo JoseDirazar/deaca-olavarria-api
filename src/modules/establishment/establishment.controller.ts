@@ -9,7 +9,7 @@ import {
   Post,
   Put,
   Query,
-  Req,
+  UnsupportedMediaTypeException,
   UploadedFile,
   UploadedFiles,
   UseGuards,
@@ -45,7 +45,6 @@ export class EstablishmentController {
   constructor(
     private readonly establishmentService: EstablishmentService,
     private readonly uploadService: UploadService,
-    private readonly analyticsService: AnalyticsService,
   ) {}
 
   @Get('')

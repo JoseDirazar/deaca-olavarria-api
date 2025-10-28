@@ -137,9 +137,15 @@ export class UserService {
   }
 
   async createWithGoogle(googleUser: TokenPayload): Promise<User> {
-    const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture!);
     const user = await UserMapper.createUserWithGooglePayload(googleUser);
-    user.avatar = avatarFilePath!;
+    console.log('google user', user);
+    if (googleUser.picture) {
+      console.log('google user picture', googleUser.picture);
+      const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture);
+      console.log('avatar file path', avatarFilePath);
+      user.avatar = avatarFilePath!;
+    }
+    console.log('user to save', user);
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
@@ -207,7 +213,7 @@ export class UserService {
 
   private async downloadAndSaveGoogleAvatar(imageUrl: string) {
     try {
-      const uploadDir = path.join(process.cwd(), 'upload', 'user', 'avatar');
+      const uploadDir = path.join(process.cwd(), 'upload', 'user');
       await fs.mkdir(uploadDir, { recursive: true });
 
       const fileExtension = '.jpg';
