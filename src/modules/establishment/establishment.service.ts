@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { EstablishmentDto } from './dto/establishment.dto';
 import { Image } from '@models/Image.entity';
-import { AccountStatus, User } from '@models/User.entity';
+import { User } from '@models/User.entity';
 import { EstablishmentMapper } from './mapper/establishment-mapper';
 import { join } from 'path';
 import * as fs from 'fs/promises';

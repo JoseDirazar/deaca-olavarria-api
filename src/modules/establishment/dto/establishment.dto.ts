@@ -1,6 +1,6 @@
 import { Category } from '@models/Category.entity';
 import { Subcategory } from '@models/Subcategory.entity';
-import { IsArray, IsEmail, IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
+import { IsArray, IsEmail, IsNotEmpty, IsString, IsUrl } from 'class-validator';
 
 export class EstablishmentDto {
   @IsString()

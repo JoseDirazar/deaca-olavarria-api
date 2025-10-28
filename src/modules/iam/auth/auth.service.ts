@@ -59,6 +59,7 @@ export class AuthService {
       if (!payload) throw new UnauthorizedException('Invalid accessToken.');
       return payload;
     } catch (error) {
+      console.error(error);
       throw new UnauthorizedException('Invalid accessToken.');
     }
   }
