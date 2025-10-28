@@ -138,27 +138,15 @@ export class UserService {
 
 <<<<<<< Updated upstream
   async createWithGoogle(googleUser: TokenPayload): Promise<User> {
-    const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture!);
     const user = await UserMapper.createUserWithGooglePayload(googleUser);
-    user.avatar = avatarFilePath!;
-=======
-  async changeAvatar(userId: string, avatar: string): Promise<User> {
-    const user = await this.findById(userId);
-    user.avatar = avatar;
-    return this.userRepository.save(user);
-  }
-
-  async createWithGoogle(email: string): Promise<User> {
-    const password = this.generateRandomPassword();
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = new User();
-    user.email = email;
-    user.password = hashedPassword;
-    user.emailVerified = true;
-
->>>>>>> Stashed changes
+    console.log('google user', user);
+    if (googleUser.picture) {
+      console.log('google user picture', googleUser.picture);
+      const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture);
+      console.log('avatar file path', avatarFilePath);
+      user.avatar = avatarFilePath!;
+    }
+    console.log('user to save', user);
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }
@@ -226,7 +214,7 @@ export class UserService {
 
   private async downloadAndSaveGoogleAvatar(imageUrl: string) {
     try {
-      const uploadDir = path.join(process.cwd(), 'upload', 'user', 'avatar');
+      const uploadDir = path.join(process.cwd(), 'upload', 'user');
       await fs.mkdir(uploadDir, { recursive: true });
 
       const fileExtension = '.jpg';
