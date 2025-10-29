@@ -74,15 +74,17 @@ export class EstablishmentController {
     return { data: items };
   }
 
-  @Get(':id')
-  async getEstablishmentById(@Param('id', new ParseUUIDPipe()) id: string, @Req() req: Request) {
-    const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) throw new NotFoundException('No se encontró el establecimiento');
+  @Get(':slug')
+  async getEstablishmentBySlug(@Param('slug') slug: string, @Req() req: Request) {
+    console.log(slug);
+    const establishment = await this.establishmentService.getEstablishmentBySlug(slug);
+    if (!establishment)
+      throw new NotFoundException({ message: 'No se encontró el establecimiento' });
 
     // Registrar visita (sin bloquear la respuesta)
     this.analyticsService
       .registerVisit({
-        establishmentId: id,
+        establishmentId: establishment.id,
         ip: req.ip ?? '',
         // userId: req.user?.id si hay auth
       })
@@ -96,11 +98,19 @@ export class EstablishmentController {
   @RolesAllowed(Roles.ADMIN, Roles.BUSINESS_OWNER)
   @Post('mine')
   async createMyEstablishment(@Body() establishmentDto: EstablishmentDto, @GetUser() user: User) {
+    const establishmentExistByName = await this.establishmentService.getEstablishmentByName(
+      establishmentDto.name,
+    );
+    if (establishmentExistByName)
+      throw new BadRequestException({
+        message: `Ya existe un establecimiento con el nombre ${establishmentDto.name}. Por favor, elige otro nombre.`,
+      });
     const establishment = await this.establishmentService.createEstablishment(
       establishmentDto,
       user,
     );
-    if (!establishment) return new NotFoundException('No se pudo crear el establecimiento');
+    if (!establishment)
+      throw new NotFoundException({ message: 'No se pudo crear el establecimiento' });
     return { data: establishment };
   }
 
@@ -111,8 +121,17 @@ export class EstablishmentController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() establishmentDto: EstablishmentDto,
   ) {
+    const establishmentExistByName = await this.establishmentService.getEstablishmentByName(
+      establishmentDto.name,
+    );
+    if (establishmentExistByName)
+      throw new BadRequestException(
+        `Ya existe un establecimiento con el nombre ${establishmentDto.name}. Por favor, elige otro nombre.`,
+        { cause: 'establishment_name_exists' },
+      );
     const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) return new NotFoundException('No se encontro el establecimiento');
+    if (!establishment)
+      throw new NotFoundException({ message: 'No se encontro el establecimiento' });
 
     const updatedEstablishment = await this.establishmentService.updateEstablishment(
       establishment,
@@ -126,7 +145,8 @@ export class EstablishmentController {
   @Delete(':id')
   async deleteMyEstablishment(@Param('id', new ParseUUIDPipe()) id: string) {
     const establishmentToDelete = await this.establishmentService.getEstablishmentById(id);
-    if (!establishmentToDelete) throw new NotFoundException('No se encontro el establecimiento');
+    if (!establishmentToDelete)
+      throw new NotFoundException({ message: 'No se encontro el establecimiento' });
 
     const result = await this.establishmentService.deleteEstablishment(establishmentToDelete);
     return { data: result };
@@ -154,10 +174,10 @@ export class EstablishmentController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (!file) throw new BadRequestException('No se envio un archivo');
+    if (!file) throw new BadRequestException({ message: 'No se envio un archivo' });
 
     const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    if (!establishment) throw new NotFoundException({ message: 'Establecimiento no encontrado' });
 
     const updatedEstablishment = await this.establishmentService.updateAvatar(
       establishment,
@@ -176,8 +196,9 @@ export class EstablishmentController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    if (!files || files.length === 0) throw new BadRequestException('No se enviaron archivos');
+    if (!establishment) throw new NotFoundException({ message: 'Establecimiento no encontrado' });
+    if (!files || files.length === 0)
+      throw new BadRequestException({ message: 'No se enviaron archivos' });
 
     const normalizedFileNames = await Promise.all(
       files.map(async (file) => {
@@ -200,7 +221,7 @@ export class EstablishmentController {
     @Param('imageId', new ParseUUIDPipe()) imageId: string,
   ) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    if (!establishment) throw new NotFoundException({ message: 'Establecimiento no encontrado' });
     return { data: await this.establishmentService.deleteImage(establishment, imageId) };
   }
 
@@ -214,7 +235,7 @@ export class EstablishmentController {
   @Get(':id/review')
   async getReviews(@Param('id', new ParseUUIDPipe()) id: string) {
     const reviews = await this.establishmentService.getReviewsByEstablishmentId(id);
-    if (!reviews) throw new NotFoundException('Calificaciones no encontradas');
+    if (!reviews) throw new NotFoundException({ message: 'Calificaciones no encontradas' });
     return { data: reviews };
   }
 
@@ -226,9 +247,9 @@ export class EstablishmentController {
     @Body() reviewDto: ReviewDto,
   ) {
     const establishment = await this.establishmentService.getEstablishmentById(id);
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
+    if (!establishment) throw new NotFoundException({ message: 'Establecimiento no encontrado' });
     if (user.id === establishment.user.id)
-      throw new BadRequestException('No puedes calificar tu propio establecimiento');
+      throw new BadRequestException({ message: 'No puedes calificar tu propio establecimiento' });
     return { data: await this.establishmentService.createReview(user, establishment, reviewDto) };
   }
 
@@ -236,7 +257,7 @@ export class EstablishmentController {
   @Put('review/:reviewId')
   async updateReview(@Param('reviewId') reviewId: string, @Body() reviewDto: ReviewDto) {
     const review = await this.establishmentService.getReviewById(reviewId);
-    if (!review) throw new NotFoundException('Calificacion no encontrada');
+    if (!review) throw new NotFoundException({ message: 'Calificacion no encontrada' });
     return {
       data: await this.establishmentService.updateReview(review, reviewDto, review.establishment),
     };
@@ -246,7 +267,7 @@ export class EstablishmentController {
   @Delete('review/:reviewId')
   async deleteReview(@Param('reviewId') reviewId: string) {
     const review = await this.establishmentService.getReviewById(reviewId);
-    if (!review) throw new NotFoundException('Calificacion no encontrada');
+    if (!review) throw new NotFoundException({ message: 'Calificacion no encontrada' });
     return { data: await this.establishmentService.deleteReview(review, review.establishment) };
   }
 }

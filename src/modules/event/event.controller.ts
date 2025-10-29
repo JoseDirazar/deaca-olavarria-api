@@ -18,6 +18,7 @@ import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
 
+// TODO: Handle errors
 @Controller('event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
@@ -25,7 +26,7 @@ export class EventController {
   @Post()
   async createEvent(@Body() eventDto: EventDto): Promise<Event | null> {
     const event = await this.eventService.createEvent(eventDto);
-    if (!event) throw new BadRequestException('No se pudo crear el evento');
+    if (!event) throw new BadRequestException({ message: 'No se pudo crear el evento' });
     return event;
   }
 

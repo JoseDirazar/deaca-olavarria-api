@@ -1,7 +1,7 @@
 import { Establishment, EstablishmentStatus } from '@models/Establishment.entity';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { EstablishmentDto } from './dto/establishment.dto';
 import { Image } from '@models/Image.entity';
@@ -80,6 +80,8 @@ export class EstablishmentService {
         'establishments.updatedAt',
         'establishments.latitude',
         'establishments.longitude',
+        'establishments.slug',
+        'establishments.email',
       ])
       .leftJoinAndSelect('establishments.categories', 'categories')
       .leftJoinAndSelect('establishments.subcategories', 'subcategories');
@@ -133,6 +135,17 @@ export class EstablishmentService {
       establishments,
       page,
     };
+  }
+
+  async getEstablishmentBySlug(slug: string) {
+    return this.establishmentRepository.findOne({
+      where: { slug },
+      relations: ['categories', 'subcategories', 'images', 'user'],
+    });
+  }
+
+  async getEstablishmentByName(name: string) {
+    return this.establishmentRepository.findOne({ where: { name: ILike(`%${name}%`) } });
   }
 
   async getEstablishmentById(id: string) {

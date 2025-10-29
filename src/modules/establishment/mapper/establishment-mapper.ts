@@ -5,9 +5,7 @@ export class EstablishmentMapper {
     dto: Partial<Establishment>,
     establishment: Establishment,
   ): Establishment {
-    return {
-      ...establishment,
-      ...dto,
-    };
+    Object.assign(establishment, dto);
+    return establishment;
   }
 }

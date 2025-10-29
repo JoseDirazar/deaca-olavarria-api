@@ -1,5 +1,15 @@
 import { BaseEntity } from 'src/infrastructure/models/Base.entity';
-import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  Index,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Category } from './Category.entity';
 import { Subcategory } from './Subcategory.entity';
 import { Image } from './Image.entity';
@@ -14,7 +24,7 @@ export enum EstablishmentStatus {
 @Entity({ name: 'establishment' })
 export class Establishment extends BaseEntity {
   @Index({ unique: true })
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255 })
   name: string;
 
   @Column({ nullable: true, type: 'varchar', length: 255 })
@@ -71,6 +81,9 @@ export class Establishment extends BaseEntity {
   @Column({ default: false, nullable: true, type: 'bool' })
   acceptCtaDNI: boolean;
 
+  @Column({ nullable: true, type: 'varchar', length: 255, unique: true })
+  slug: string;
+
   @OneToMany(() => Review, (review) => review.establishment, { cascade: true })
   reviewsReceived: Review[] | null;
 
@@ -87,4 +100,17 @@ export class Establishment extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.establishments, { cascade: true })
   user: User;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  generateSlug() {
+    this.slug =
+      this.name
+        .toLowerCase()
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') ?? this.name;
+  }
 }

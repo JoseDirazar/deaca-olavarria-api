@@ -61,20 +61,25 @@ export class CategoryController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async createCategory(@Body() categoryDto: CreateCategoryDto) {
-    if (!categoryDto) return new BadRequestException('La categoria es requerida');
+    if (!categoryDto) throw new BadRequestException({ message: 'La categoria es requerida' });
+    const categoryExists = await this.categoryService.findOneByName(categoryDto.name);
+    if (categoryExists)
+      throw new BadRequestException({ message: `La categoria ${categoryDto.name} ya existe` });
     const category = await this.categoryService.createCategory(categoryDto);
-    if (!category) return new NotFoundException('No se encontro la categoria');
+    if (!category) throw new NotFoundException({ message: 'No se encontro la categoria' });
     return { data: category };
   }
 
+  //TODO: chequear que exista la subcategoria y devolver mensaje correctamente (tengo que chequear tdos los thorows de la api, si vuelve return el status da algun OK)
   @Post('subcategories')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   async createSubcategory(@Body() { name, categoryId }: { name: string; categoryId: string }) {
-    if (!name) return new BadRequestException('El nombre es requerido');
-    if (!categoryId) return new BadRequestException('El id de la categoria es requerido');
+    if (!name) throw new BadRequestException({ message: 'El nombre es requerido' });
+    if (!categoryId)
+      throw new BadRequestException({ message: 'El id de la categoria es requerido' });
     const subcategory = await this.categoryService.createSubcategory(categoryId, name);
-    if (!subcategory) return new NotFoundException('No se encontro la subcategoria');
+    if (!subcategory) throw new NotFoundException({ message: 'No se encontro la subcategoria' });
     return { data: subcategory };
   }
 
@@ -86,6 +91,7 @@ export class CategoryController {
     @Body() { name }: { name: string },
   ) {
     const category = await this.categoryService.updateCategory(id, name);
+    if (!category) throw new NotFoundException({ message: 'No se encontro la categoria' });
     return { data: category };
   }
 
@@ -96,7 +102,11 @@ export class CategoryController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() { name }: { name: string },
   ) {
+    const existingSubcategory = await this.categoryService.findOneById(id);
+    if (!existingSubcategory)
+      throw new NotFoundException({ message: 'No se encontro la subcategoria' });
     const subcategory = await this.categoryService.updateSubcategory(id, name);
+    if (!subcategory) throw new NotFoundException({ message: 'No se encontro la subcategoria' });
     return { data: subcategory };
   }
 
@@ -123,10 +133,10 @@ export class CategoryController {
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,
   ): Promise<ApiResponse<Category>> {
-    if (!file) throw new BadRequestException('No se envio un archivo');
+    if (!file) throw new BadRequestException({ message: 'No se envio un archivo' });
 
-    const category = await this.categoryService.findOne(id);
-    if (!category) throw new NotFoundException('Categoria no encontrada');
+    const category = await this.categoryService.findOneById(id);
+    if (!category) throw new NotFoundException({ message: 'Categoria no encontrada' });
 
     const categorySaved = await this.categoryService.changeIcon(category, file.path);
 

@@ -20,7 +20,7 @@ export class AppReviewController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
+  // @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   async createAppReview(@GetUser('id') userId: string, @Body() appReview: AppReviewDto) {
     const existingReview = await this.appReviewService.findOneByUserId(userId);
     if (existingReview) throw new Error('Review already exists');

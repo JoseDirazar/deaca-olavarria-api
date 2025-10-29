@@ -34,7 +34,7 @@ export class UserController {
   @Get('me')
   async me(@GetUser('id') userId: string) {
     const userFound = await this.userService.findById(userId);
-    if (!userFound) throw new NotFoundException('Usuario no encontrado');
+    if (!userFound) throw new NotFoundException({ message: 'Usuario no encontrado' });
     return { data: userFound };
   }
 
@@ -64,7 +64,7 @@ export class UserController {
     @Body() editProfileDto: EditProfileDto,
   ): Promise<ApiResponse<User>> {
     const userFound = await this.userService.findById(userId);
-    if (!userFound) throw new NotFoundException('Usuario no encontrado');
+    if (!userFound) throw new NotFoundException({ message: 'Usuario no encontrado' });
     const usersaved = await this.userService.editProfile(userFound, editProfileDto);
     return { data: usersaved };
   }
@@ -79,7 +79,7 @@ export class UserController {
     if (!file) throw new BadRequestException('No se envió un archivo');
 
     const user = await this.userService.findById(userId);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!user) throw new NotFoundException({ message: 'Usuario no encontrado' });
 
     const updatedUser = await this.userService.changeAvatar(user, USER_AVATAR_PATH + file.filename);
 
@@ -91,7 +91,7 @@ export class UserController {
   @RolesAllowed(Roles.ADMIN)
   async approveEstablishmentOwner(@Body('userId') userId: string): Promise<ApiResponse<User>> {
     const user = await this.userService.findById(userId);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!user) throw new NotFoundException({ message: 'Usuario no encontrado' });
     const userSaved = await this.userService.approveEstablishmentOwner(user);
     return { data: userSaved };
   }
@@ -104,7 +104,7 @@ export class UserController {
     @Body('status') status: AccountStatus,
   ): Promise<ApiResponse<User>> {
     const user = await this.userService.userExistByEmail(email);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!user) throw new NotFoundException({ message: 'Usuario no encontrado' });
     await this.userService.changeUserAccountStatus(user, status);
     return { message: `Usuario ${user.email}: ${status}` };
   }
@@ -114,7 +114,7 @@ export class UserController {
   @RolesAllowed(Roles.ADMIN)
   async promoteUserToAdmin(@Body('email') email: string): Promise<ApiResponse<void>> {
     const user = await this.userService.userExistByEmail(email);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!user) throw new NotFoundException({ message: 'Usuario no encontrado' });
     await this.userService.promoteUserToAdmin(user);
     return { message: `Usuario ${user.email} es ahora administrador` };
   }

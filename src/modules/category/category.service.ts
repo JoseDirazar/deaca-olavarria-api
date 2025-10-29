@@ -1,7 +1,7 @@
 import { Category } from '@models/Category.entity';
 import { Subcategory } from '@models/Subcategory.entity';
 import { UploadService } from '@modules/upload/upload.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -14,11 +14,11 @@ export class CategoryService {
     private readonly uploadService: UploadService,
   ) {}
 
-  async findOne(id: string) {
+  async findOneById(id: string) {
     return await this.categoryRepository.findOne({ where: { id } });
   }
 
-  async findByName(name: string) {
+  async findOneByName(name: string) {
     return await this.categoryRepository.findOne({ where: { name } });
   }
 
@@ -66,27 +66,27 @@ export class CategoryService {
 
   async updateCategory(id: string, name: string) {
     const category = await this.categoryRepository.findOne({ where: { id } });
-    if (!category) return null;
+    if (!category) throw new NotFoundException({ message: 'No se encontro la categoria' });
     category.name = name;
     return await this.categoryRepository.save(category);
   }
 
   async updateSubcategory(id: string, name: string) {
     const subcategory = await this.subcategoryRepository.findOne({ where: { id } });
-    if (!subcategory) return null;
+    if (!subcategory) throw new NotFoundException({ message: 'No se encontro la subcategoria' });
     subcategory.name = name;
     return await this.subcategoryRepository.save(subcategory);
   }
 
   async deleteCategory(id: string) {
     const category = await this.categoryRepository.findOne({ where: { id } });
-    if (!category) return null;
+    if (!category) throw new NotFoundException({ message: 'No se encontro la categoria' });
     return await this.categoryRepository.remove(category);
   }
 
   async deleteSubcategory(id: string) {
     const subcategory = await this.subcategoryRepository.findOne({ where: { id } });
-    if (!subcategory) return null;
+    if (!subcategory) throw new NotFoundException({ message: 'No se encontro la subcategoria' });
     return await this.subcategoryRepository.remove(subcategory);
   }
 

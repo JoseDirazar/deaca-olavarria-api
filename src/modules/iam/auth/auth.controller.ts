@@ -39,7 +39,7 @@ export class AuthController {
   @Post('sign-up')
   async createUser(@Body() { email, password, firstName, lastName }: SignUpDto) {
     const userExist = await this.userService.userExistByEmail(email);
-    if (userExist) throw new BadRequestException('User already exists');
+    if (userExist) throw new BadRequestException({ message: 'User already exists' });
 
     await this.userService.createUser({
       email,
@@ -74,7 +74,7 @@ export class AuthController {
     const googleUser: TokenPayload = await this.authService.getUserWithGoogleTokens(
       logInWithGoogleDto.accessToken,
     );
-    if (!googleUser.email) throw new BadRequestException('Access token no valido');
+    if (!googleUser.email) throw new BadRequestException({ message: 'Access token no valido' });
     let user = await this.userService.userExistByEmail(googleUser.email);
 
     if (!user) {
@@ -119,8 +119,9 @@ export class AuthController {
   @Post('confirm-email')
   async confirmEmail(@Body() dto: VerifyEmailDto): Promise<ApiResponse<User>> {
     const user = await this.userService.getVerificationCode(dto.email);
-    if (!user) throw new NotFoundException('User not found');
-    if (user.emailCode !== dto.emailCode) throw new NotFoundException('Email code not valid');
+    if (!user) throw new NotFoundException({ message: 'User not found' });
+    if (user.emailCode !== dto.emailCode)
+      throw new NotFoundException({ message: 'Email code not valid' });
 
     const updatedUser = await this.userService.verifyEmailAndResetEmailCode(user);
     this.userService.editProfile(user, updatedUser);
@@ -135,7 +136,7 @@ export class AuthController {
     const user = await this.userService.getUserWithUnselectableFields(
       requestPasswordResetDto.email,
     );
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException({ message: 'User not found' });
     await this.userService.generateResetCodeAndUpdateUser(user);
     await this.userService.sendEmailVerificationCode(user);
     return { message: 'Password reset request sent successfully' };
@@ -145,11 +146,12 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto) {
     const existingUser = await this.userService.getResssetCodeAndPassword(dto.email);
-    if (!existingUser) throw new NotFoundException('User not found');
+    if (!existingUser) throw new NotFoundException({ message: 'User not found' });
     if (existingUser.emailCode !== dto.resetCode)
-      throw new UnauthorizedException('Invalid reset code');
+      throw new UnauthorizedException({ message: 'Invalid reset code' });
     const codeAge = Date.now() - new Date(existingUser.emailCodeCreatedAt).getTime();
-    if (codeAge > 3600000 * 24) throw new UnauthorizedException('Reset code has expired');
+    if (codeAge > 3600000 * 24)
+      throw new UnauthorizedException({ message: 'Reset code has expired' });
 
     await this.userService.changePassword(existingUser, dto.newPassword);
 
@@ -160,7 +162,7 @@ export class AuthController {
   @Post('resend-verification-email')
   async resendVerificationEmail(@Body() { email }: ResendEmailCodeDto) {
     const user = await this.userService.getVerificationCode(email);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException({ message: 'User not found' });
     await this.userService.sendEmailVerificationCode(user);
     return { message: 'Verification email sent successfully' };
   }
