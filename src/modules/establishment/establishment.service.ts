@@ -25,26 +25,6 @@ export class EstablishmentService {
     private readonly uploadService: UploadService,
   ) {}
 
-  private computeIsComplete(est: Establishment): boolean {
-    const hasAvatar = Boolean(est.avatar && est.avatar.trim().length > 0);
-    const imagesCount = Array.isArray(est.images) ? est.images.length : 0;
-    const hasMinImages = imagesCount >= 5;
-    const hasCategory = Array.isArray(est.categories) && est.categories.length >= 1;
-    const hasSubcategory = Array.isArray(est.subcategories) && est.subcategories.length >= 1;
-    return hasAvatar && hasMinImages && hasCategory && hasSubcategory;
-  }
-
-  async refreshCompleteness(establishmentId: string): Promise<boolean> {
-    const establishment = await this.establishmentRepository.findOne({
-      where: { id: establishmentId },
-      relations: ['categories', 'subcategories', 'images'],
-    });
-    if (!establishment) throw new NotFoundException('Establecimiento no encontrado');
-    establishment.isComplete = this.computeIsComplete(establishment);
-    await this.establishmentRepository.save(establishment);
-    return establishment.isComplete;
-  }
-
   async getPaginatedEstablishments(params: EstablishmentsPaginationQueryParamsDto) {
     const page = params?.page || 1;
     const limit = params?.limit || 10;
@@ -74,7 +54,6 @@ export class EstablishmentService {
         'establishments.address',
         'establishments.description',
         'establishments.avatar',
-        'establishments.isComplete',
         'establishments.status',
         'establishments.createdAt',
         'establishments.updatedAt',
@@ -203,7 +182,7 @@ export class EstablishmentService {
   async getEstablishmentsByUser(userId: string) {
     return await this.establishmentRepository.find({
       where: { user: { id: userId } as any },
-      relations: ['categories', 'subcategories', 'images'],
+      relations: ['categories', 'subcategories', 'images', 'visits'],
       order: { createdAt: 'DESC' },
     });
   }

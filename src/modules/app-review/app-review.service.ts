@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AppReview } from '@models/AppReview.entity';
+import { AppReview, AppReviewStatus } from '@models/AppReview.entity';
 import { Repository } from 'typeorm';
 import { AppReviewDto } from './dto/app-review.dto';
 
@@ -18,17 +18,27 @@ export class AppReviewService {
       .select([
         'appReview.id',
         'appReview.comment',
+        'appReview.createdAt',
+        'appReview.status',
         'user.id',
         'user.firstName',
         'user.avatar',
         'establishments.name',
       ])
+      .orderBy('appReview.createdAt', 'DESC')
       .getMany();
     return reviews;
   }
 
   async findOneByUserId(userId: string) {
-    return this.appReviewRepository.findOneBy({ user: { id: userId } });
+    return this.appReviewRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+  }
+
+  async findOneById(id: string) {
+    return this.appReviewRepository.findOne({ where: { id }, relations: ['user'] });
   }
 
   async createAppReview(userId: string, appReviewDto: AppReviewDto) {
@@ -36,17 +46,15 @@ export class AppReviewService {
     return this.appReviewRepository.save(appReview);
   }
 
-  async updateAppReview(userId: string, id: string, appReviewDto: AppReviewDto) {
-    const appReview = await this.appReviewRepository.findOneBy({ id });
-    if (!appReview) return null;
-    if (appReview.user.id !== userId) return null;
+  async updateAppReview(appReview: AppReview, appReviewDto: AppReviewDto) {
     return this.appReviewRepository.save({ ...appReview, ...appReviewDto });
   }
 
-  async deleteAppReview(userId: string, id: string) {
-    const appReview = await this.appReviewRepository.findOneBy({ id });
-    if (!appReview) return null;
-    if (appReview.user.id !== userId) return null;
-    return this.appReviewRepository.delete(id);
+  async deleteAppReview(appReview: AppReview) {
+    return this.appReviewRepository.delete(appReview.id);
+  }
+
+  async updateAppReviewStatus(appReview: AppReview, status: AppReviewStatus) {
+    return this.appReviewRepository.save({ ...appReview, status });
   }
 }

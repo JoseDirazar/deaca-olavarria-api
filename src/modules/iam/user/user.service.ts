@@ -1,5 +1,5 @@
 import { AccountStatus, User } from '@models/User.entity';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditProfileDto } from './dto/edit-profile.dto';
@@ -64,6 +64,14 @@ export class UserService {
       page,
       limit,
     };
+  }
+
+  async getAdminUsersChart() {
+    const totalUsers = await this.userRepository
+      .createQueryBuilder('user')
+      .select('user.createdAt', 'createdAt')
+      .getRawMany();
+    return totalUsers;
   }
 
   async createUser(dto: SignUpDto): Promise<User> {
@@ -242,6 +250,11 @@ export class UserService {
 
   async promoteUserToAdmin(user: User): Promise<User> {
     user.role = Roles.ADMIN;
+    return this.userRepository.save(user);
+  }
+
+  async becomeBusinessOwner(user: User): Promise<User> {
+    user.role = Roles.BUSINESS_OWNER;
     return this.userRepository.save(user);
   }
 }

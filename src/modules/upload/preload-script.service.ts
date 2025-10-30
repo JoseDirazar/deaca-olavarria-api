@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Image } from '@models/Image.entity';
 import { CreateCategoryDto } from '@modules/category/dto/create-category.dto';
 import { User } from '@models/User.entity';
-import { Establishment } from '@models/Establishment.entity';
+import { Establishment, EstablishmentStatus } from '@models/Establishment.entity';
 import { Category } from '@models/Category.entity';
 
 @Injectable()
@@ -371,8 +371,7 @@ export class DataService {
         description:
           'Brandi es una empresa de tecnología que ofrece soluciones innovadoras para mejorar la experiencia de los usuarios.',
         avatar: 'Screenshot from 2025-10-17 13-01-23.png',
-        isComplete: true,
-        verified: true,
+        status: EstablishmentStatus.ACTIVE,
         latitude: '-36.89136217536246',
         longitude: '-60.328559258424605',
         email: 'brandi@brandi.com',

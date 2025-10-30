@@ -2,7 +2,7 @@ import { BaseEntity } from 'src/infrastructure/models/Base.entity';
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './User.entity';
 
-export enum Status {
+export enum AppReviewStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
@@ -12,8 +12,8 @@ export class AppReview extends BaseEntity {
   @Column({ type: 'text' })
   comment: string;
 
-  @Column({ type: 'enum', enum: Status, default: Status.PENDING })
-  status: Status;
+  @Column({ type: 'enum', enum: AppReviewStatus, default: AppReviewStatus.PENDING })
+  status: AppReviewStatus;
 
   @OneToOne(() => User, { cascade: true })
   @JoinColumn({ name: 'userId' })

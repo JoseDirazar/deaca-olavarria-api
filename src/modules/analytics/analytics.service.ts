@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Analytics } from '@modules/analytics/entity/Analytics.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class AnalyticsService {
@@ -10,21 +10,27 @@ export class AnalyticsService {
     private readonly analyticsRepository: Repository<Analytics>,
   ) {}
 
-  async registerVisit({
-    establishmentId,
-    userId,
-    ip,
-  }: {
-    establishmentId: string;
-    userId?: string;
-    ip?: string;
-  }) {
+  async registerVisit({ establishmentId, ip }: { establishmentId: string; ip?: string }) {
     const visit = this.analyticsRepository.create({
-      establishment_id: establishmentId,
-      user_id: userId,
+      establishment: {
+        id: establishmentId,
+      },
       ip: this.normalizeIp(ip),
     });
     await this.analyticsRepository.save(visit);
+  }
+
+  async getVisitsByEstablishmentOwnerId(ownerId: string) {
+    const [visits, total] = await this.analyticsRepository.findAndCount({
+      where: {
+        establishment: {
+          user: {
+            id: ownerId,
+          },
+        },
+      },
+    });
+    return { visits, total };
   }
 
   private normalizeIp(ip: string | undefined): string {

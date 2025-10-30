@@ -58,6 +58,14 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Get('admin-users-chart')
+  async getAdminUsersChart() {
+    const adminUsersChart = await this.userService.getAdminUsersChart();
+    return { data: adminUsersChart };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put('')
   async editProfile(
     @GetUser('id') userId: string,
@@ -117,5 +125,14 @@ export class UserController {
     if (!user) throw new NotFoundException({ message: 'Usuario no encontrado' });
     await this.userService.promoteUserToAdmin(user);
     return { message: `Usuario ${user.email} es ahora administrador` };
+  }
+
+  @Put('become-business-owner')
+  @UseGuards(JwtAuthGuard)
+  async becomeBusinessOwner(@Body('email') email: string): Promise<ApiResponse<User>> {
+    const user = await this.userService.userExistByEmail(email);
+    if (!user) throw new NotFoundException({ message: 'Usuario no encontrado' });
+    const updatedUser = await this.userService.becomeBusinessOwner(user);
+    return { message: `Usuario ${user.email} es ahora emprendedor`, data: updatedUser };
   }
 }

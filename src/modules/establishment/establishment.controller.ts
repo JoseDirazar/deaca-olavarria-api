@@ -66,8 +66,8 @@ export class EstablishmentController {
   }
 
   // Owner list my establishments
-  @UseGuards(JwtAuthGuard)
-  @RolesAllowed(Roles.BUSINESS_OWNER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   @Get('mine')
   async getMyEstablishments(@GetUser('id') userId: string): Promise<ApiResponse<Establishment[]>> {
     const items = await this.establishmentService.getEstablishmentsByUser(userId);
@@ -86,7 +86,6 @@ export class EstablishmentController {
       .registerVisit({
         establishmentId: establishment.id,
         ip: req.ip ?? '',
-        // userId: req.user?.id si hay auth
       })
       .catch(() => {});
 
@@ -124,7 +123,7 @@ export class EstablishmentController {
     const establishmentExistByName = await this.establishmentService.getEstablishmentByName(
       establishmentDto.name,
     );
-    if (establishmentExistByName)
+    if (establishmentExistByName && establishmentExistByName.id !== id)
       throw new BadRequestException(
         `Ya existe un establecimiento con el nombre ${establishmentDto.name}. Por favor, elige otro nombre.`,
         { cause: 'establishment_name_exists' },
@@ -137,7 +136,10 @@ export class EstablishmentController {
       establishment,
       establishmentDto,
     );
-    return { data: updatedEstablishment };
+    return {
+      data: updatedEstablishment,
+      message: `Emprendimiento ${updatedEstablishment.name} actualizado`,
+    };
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -223,13 +225,6 @@ export class EstablishmentController {
     const establishment = await this.establishmentService.getEstablishmentById(id);
     if (!establishment) throw new NotFoundException({ message: 'Establecimiento no encontrado' });
     return { data: await this.establishmentService.deleteImage(establishment, imageId) };
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
-  @Patch(':id/completeness')
-  async refreshCompleteness(@Param('id', new ParseUUIDPipe()) id: string) {
-    return { data: await this.establishmentService.refreshCompleteness(id) };
   }
 
   @Get(':id/review')

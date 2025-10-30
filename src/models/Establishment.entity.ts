@@ -15,6 +15,7 @@ import { Subcategory } from './Subcategory.entity';
 import { Image } from './Image.entity';
 import { Review } from './Review.entity';
 import { User } from './User.entity';
+import { Analytics } from '@modules/analytics/entity/Analytics.entity';
 
 export enum EstablishmentStatus {
   ACTIVE = 'ACTIVE',
@@ -60,9 +61,6 @@ export class Establishment extends BaseEntity {
   @Column({ type: 'enum', enum: EstablishmentStatus, default: EstablishmentStatus.PENDING })
   status: EstablishmentStatus;
 
-  @Column({ default: false, type: 'bool' })
-  isComplete: boolean;
-
   @Column({ nullable: true, type: 'decimal', precision: 2 })
   rating: number;
 
@@ -100,6 +98,9 @@ export class Establishment extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.establishments, { cascade: true })
   user: User;
+
+  @OneToMany(() => Analytics, (analytics) => analytics.establishment, { cascade: true })
+  visits: Analytics[] | null;
 
   @BeforeInsert()
   @BeforeUpdate()
