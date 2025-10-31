@@ -65,6 +65,14 @@ export class EstablishmentController {
     };
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Get('admin-establishments-chart')
+  async getAdminEstablishmentsChart() {
+    const adminEstablishmentsChart = await this.establishmentService.getAdminEstablishmentsChart();
+    return { data: adminEstablishmentsChart };
+  }
+
   // Owner list my establishments
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
@@ -83,7 +91,7 @@ export class EstablishmentController {
 
     // Registrar visita (sin bloquear la respuesta)
     this.analyticsService
-      .registerVisit({
+      .registerEstablishmentVisit({
         establishmentId: establishment.id,
         ip: req.ip ?? '',
       })

@@ -7,10 +7,10 @@ import { Establishment } from '@models/Establishment.entity';
 export class Analytics extends BaseEntity {
   @ManyToOne(() => Establishment, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'establishment_id' })
-  establishment: Establishment;
+  establishment?: Establishment;
 
-  @Column()
-  establishmentId: string;
+  @Column({ nullable: true, type: 'varchar' })
+  establishmentId: string | null;
 
   @Column({ nullable: true })
   ip?: string;

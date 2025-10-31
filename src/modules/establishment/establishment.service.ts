@@ -1,7 +1,7 @@
 import { Establishment, EstablishmentStatus } from '@models/Establishment.entity';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { EstablishmentsPaginationQueryParamsDto } from './dto/establishments-pagination-params.dto';
 import { EstablishmentDto } from './dto/establishment.dto';
 import { Image } from '@models/Image.entity';
@@ -114,6 +114,14 @@ export class EstablishmentService {
       establishments,
       page,
     };
+  }
+
+  async getAdminEstablishmentsChart() {
+    const totalEstablishments = await this.establishmentRepository
+      .createQueryBuilder('establishment')
+      .select('establishment.createdAt', 'createdAt')
+      .getRawMany();
+    return totalEstablishments;
   }
 
   async getEstablishmentBySlug(slug: string) {

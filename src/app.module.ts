@@ -17,6 +17,9 @@ import { typeormConfig } from './config/typeorm.config';
 import { AppReviewModule } from '@modules/app-review/app-review.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TendencyModule } from '@modules/tendency/tendency.module';
+import { EventsModule } from './modules/events/events.module';
+import { NatureSpotModule } from './modules/nature-spot/nature-spot.module';
 
 @Module({
   imports: [
@@ -37,6 +40,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     AppReviewModule,
     AnalyticsModule,
     ScheduleModule.forRoot(),
+    TendencyModule,
+    EventsModule,
+    NatureSpotModule,
   ],
   controllers: [AppController],
   providers: [AppService],
