@@ -1,0 +1,645 @@
+{
+  "farmacias_por_dia": [
+    {
+      "dia_semana": "MIERCOLES",
+      "dia_mes": "1",
+      "farmacias": [
+        {
+          "nombre": "ALEM"
+        },
+        {
+          "nombre": "LA ESENCIA"
+        },
+        {
+          "nombre": "MENESCALDI"
+        }
+      ]
+    },
+    {
+      "dia_semana": "JUEVES",
+      "dia_mes": "2",
+      "farmacias": [
+        {
+          "nombre": "CORREA"
+        },
+        {
+          "nombre": "MAGISTRAL"
+        },
+        {
+          "nombre": "MELFFI"
+        }
+      ]
+    },
+    {
+      "dia_semana": "VIERNES",
+      "dia_mes": "3",
+      "farmacias": [
+        {
+          "nombre": "LAVIN"
+        },
+        {
+          "nombre": "MARTINEZ"
+        },
+        {
+          "nombre": "STRIEBECK"
+        }
+      ]
+    },
+    {
+      "dia_semana": "SABADO",
+      "dia_mes": "4",
+      "farmacias": [
+        {
+          "nombre": "DELLA MAGGIORA"
+        },
+        {
+          "nombre": "DISANTI"
+        },
+        {
+          "nombre": "SPINOLA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "DOMINGO",
+      "dia_mes": "5",
+      "farmacias": [
+        {
+          "nombre": "CENTRAL"
+        },
+        {
+          "nombre": "MARTEL"
+        },
+        {
+          "nombre": "SPINA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "LUNES",
+      "dia_mes": "6",
+      "farmacias": [
+        {
+          "nombre": "BETZ"
+        },
+        {
+          "nombre": "OLAVARRIA"
+        },
+        {
+          "nombre": "PACHECO"
+        },
+        {
+          "nombre": "ZAPARARTE"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MARTES",
+      "dia_mes": "7",
+      "farmacias": [
+        {
+          "nombre": "FENIX"
+        },
+        {
+          "nombre": "FERRERO"
+        },
+        {
+          "nombre": "SAN JOSE"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MIERCOLES",
+      "dia_mes": "8",
+      "farmacias": [
+        {
+          "nombre": "ALVAREZ"
+        },
+        {
+          "nombre": "BALDINI"
+        },
+        {
+          "nombre": "FAILLA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "JUEVES",
+      "dia_mes": "9",
+      "farmacias": [
+        {
+          "nombre": "BUENO"
+        },
+        {
+          "nombre": "GOMEZ"
+        },
+        {
+          "nombre": "LUJAN"
+        }
+      ]
+    },
+    {
+      "dia_semana": "VIERNES",
+      "dia_mes": "10",
+      "farmacias": [
+        {
+          "nombre": "ALEM"
+        },
+        {
+          "nombre": "LA ESENCIA"
+        },
+        {
+          "nombre": "MENESCALDI"
+        }
+      ]
+    },
+    {
+      "dia_semana": "SABADO",
+      "dia_mes": "11",
+      "farmacias": [
+        {
+          "nombre": "CORREA"
+        },
+        {
+          "nombre": "MAGISTRAL"
+        },
+        {
+          "nombre": "MELFFI"
+        }
+      ]
+    },
+    {
+      "dia_semana": "DOMINGO",
+      "dia_mes": "12",
+      "farmacias": [
+        {
+          "nombre": "MARTINEZ"
+        },
+        {
+          "nombre": "MENESCALDI"
+        },
+        {
+          "nombre": "ZAPARARTE"
+        }
+      ]
+    },
+    {
+      "dia_semana": "LUNES",
+      "dia_mes": "13",
+      "farmacias": [
+        {
+          "nombre": "DELLA MAGGIORA"
+        },
+        {
+          "nombre": "DISANTI"
+        },
+        {
+          "nombre": "SPINOLA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MARTES",
+      "dia_mes": "14",
+      "farmacias": [
+        {
+          "nombre": "CENTRAL"
+        },
+        {
+          "nombre": "MARTEL"
+        },
+        {
+          "nombre": "MOGUES"
+        },
+        {
+          "nombre": "SPINA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MIERCOLES",
+      "dia_mes": "15",
+      "farmacias": [
+        {
+          "nombre": "BETZ"
+        },
+        {
+          "nombre": "OLAVARRIA"
+        },
+        {
+          "nombre": "PACHECO"
+        },
+        {
+          "nombre": "ZAPARARTE"
+        }
+      ]
+    },
+    {
+      "dia_semana": "JUEVES",
+      "dia_mes": "16",
+      "farmacias": [
+        {
+          "nombre": "FENIX"
+        },
+        {
+          "nombre": "FERRERO"
+        },
+        {
+          "nombre": "SAN JOSE"
+        }
+      ]
+    },
+    {
+      "dia_semana": "VIERNES",
+      "dia_mes": "17",
+      "farmacias": [
+        {
+          "nombre": "ALVAREZ"
+        },
+        {
+          "nombre": "BALDINI"
+        },
+        {
+          "nombre": "FAILLA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "SABADO",
+      "dia_mes": "18",
+      "farmacias": [
+        {
+          "nombre": "BUENO"
+        },
+        {
+          "nombre": "GOMEZ"
+        },
+        {
+          "nombre": "LUJAN"
+        }
+      ]
+    },
+    {
+      "dia_semana": "DOMINGO",
+      "dia_mes": "19",
+      "farmacias": [
+        {
+          "nombre": "ALEM"
+        },
+        {
+          "nombre": "LA ESENCIA"
+        },
+        {
+          "nombre": "MENESCALDI"
+        }
+      ]
+    },
+    {
+      "dia_semana": "LUNES",
+      "dia_mes": "20",
+      "farmacias": [
+        {
+          "nombre": "CORREA"
+        },
+        {
+          "nombre": "MAGISTRAL"
+        },
+        {
+          "nombre": "MELFFI"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MARTES",
+      "dia_mes": "21",
+      "farmacias": [
+        {
+          "nombre": "LAVIN"
+        },
+        {
+          "nombre": "MARTINEZ"
+        },
+        {
+          "nombre": "STRIEBECK"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MIERCOLES",
+      "dia_mes": "22",
+      "farmacias": [
+        {
+          "nombre": "DELLA MAGGIORA"
+        },
+        {
+          "nombre": "DISANTI"
+        },
+        {
+          "nombre": "SPINOLA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "JUEVES",
+      "dia_mes": "23",
+      "farmacias": [
+        {
+          "nombre": "MARTEL"
+        },
+        {
+          "nombre": "MOGUES"
+        },
+        {
+          "nombre": "SPINA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "VIERNES",
+      "dia_mes": "24",
+      "farmacias": [
+        {
+          "nombre": "CENTRAL"
+        },
+        {
+          "nombre": "OLAVARRIA"
+        },
+        {
+          "nombre": "PACHECO"
+        }
+      ]
+    },
+    {
+      "dia_semana": "SABADO",
+      "dia_mes": "25",
+      "farmacias": [
+        {
+          "nombre": "FENIX"
+        },
+        {
+          "nombre": "FERRERO"
+        },
+        {
+          "nombre": "SAN JOSE"
+        }
+      ]
+    },
+    {
+      "dia_semana": "DOMINGO",
+      "dia_mes": "26",
+      "farmacias": [
+        {
+          "nombre": "ALVAREZ"
+        },
+        {
+          "nombre": "BALDINI"
+        },
+        {
+          "nombre": "FAILLA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "LUNES",
+      "dia_mes": "27",
+      "farmacias": [
+        {
+          "nombre": "GOMEZ"
+        },
+        {
+          "nombre": "LUJAN"
+        },
+        {
+          "nombre": "PACHECO"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MARTES",
+      "dia_mes": "28",
+      "farmacias": [
+        {
+          "nombre": "LA ESENCIA"
+        },
+        {
+          "nombre": "SAN  JOSE"
+        },
+        {
+          "nombre": "SPINOLA"
+        }
+      ]
+    },
+    {
+      "dia_semana": "MIERCOLES",
+      "dia_mes": "29",
+      "farmacias": [
+        {
+          "nombre": "CORREA"
+        },
+        {
+          "nombre": "MAGISTRAL"
+        },
+        {
+          "nombre": "MELFFI"
+        }
+      ]
+    },
+    {
+      "dia_semana": "JUEVES",
+      "dia_mes": "30",
+      "farmacias": [
+        {
+          "nombre": "LAVIN"
+        },
+        {
+          "nombre": "MARTINEZ"
+        },
+        {
+          "nombre": "STRIEBECK"
+        }
+      ]
+    },
+    {
+      "dia_semana": "VIERNES",
+      "dia_mes": "31",
+      "farmacias": [
+        {
+          "nombre": "DELLA MAGGIORA"
+        },
+        {
+          "nombre": "DISANTI"
+        },
+        {
+          "nombre": "SPINOLA"
+        }
+      ]
+    }
+  ],
+  "detalle_farmacias": [
+    {
+      "nombre": "FARMACIA ALEM",
+      "direccion": "RIVADAVIA 2957",
+      "telefono": "425245"
+    },
+    {
+      "nombre": "FARMACIA ALVAREZ",
+      "direccion": "BELGRANO Y MORENO",
+      "telefono": "420560/ 422488"
+    },
+    {
+      "nombre": "FARMACIA BALDINI",
+      "direccion": "URQUIZA 3920",
+      "telefono": "428438/ 427910"
+    },
+    {
+      "nombre": "FARMACIA BETZ",
+      "direccion": "PRINGLES 2035",
+      "telefono": "411690"
+    },
+    {
+      "nombre": "FARMACIA BUENO",
+      "direccion": "LAVALLE Y GRAL.PAZ",
+      "telefono": "414651/15622985"
+    },
+    {
+      "nombre": "FARMACIA CENTRAL",
+      "direccion": "VTE. LOPEZ Y GRAL.PAZ",
+      "telefono": "420674"
+    },
+    {
+      "nombre": "FARMACIA CORREA",
+      "direccion": "COLON 2084",
+      "telefono": "412201"
+    },
+    {
+      "nombre": "FARMACIA DARI",
+      "direccion": "M.SMIRNOFF 2130 (S.BAYAS)",
+      "telefono": "490102"
+    },
+    {
+      "nombre": "FARMACIA DELLA MAGGIORA",
+      "direccion": "SARMIENTO 1746",
+      "telefono": "415111"
+    },
+    {
+      "nombre": "FARMACIA DISANTI",
+      "direccion": "RIVADAVIA Y BUCHARDO",
+      "telefono": "427868"
+    },
+    {
+      "nombre": "FARMACIA FAILLA",
+      "direccion": "CHACABUCO Y DEL VALLE",
+      "telefono": "426716/ 271815"
+    },
+    {
+      "nombre": "FARMACIA FENIX",
+      "direccion": "VTE. LOPEZ 2257",
+      "telefono": "430013"
+    },
+    {
+      "nombre": "FARMACIA FERRERO",
+      "direccion": "TRABAJADORES 3335",
+      "telefono": "425355"
+    },
+    {
+      "nombre": "FARMACIA GOMEZ",
+      "direccion": "COLON 1745",
+      "telefono": "411295"
+    },
+    {
+      "nombre": "FARMACIA GOMEZ DE S.CHICA",
+      "direccion": "CENTENARIO 1299 (S.CHICA)",
+      "telefono": "423560"
+    },
+    {
+      "nombre": "FARMACIA LA ESENCIA",
+      "direccion": "PRINGLES Y BOLIVAR",
+      "telefono": "418484"
+    },
+    {
+      "nombre": "FARMACIA LAVIN",
+      "direccion": "PRINGLES 4402",
+      "telefono": "4212170"
+    },
+    {
+      "nombre": "FARMACIA LUJAN",
+      "direccion": "COLON Y URQUIZA",
+      "telefono": "15202045"
+    },
+    {
+      "nombre": "FARMACIA MAGISTRAL",
+      "direccion": "SARMIENTO Y MORENO",
+      "telefono": "431313"
+    },
+    {
+      "nombre": "FARMACIA MARTEL",
+      "direccion": "ESPAÑA Y GRAL. PAZ",
+      "telefono": "423530/ 445550"
+    },
+    {
+      "nombre": "FARMACIA MARTINEZ",
+      "direccion": "COLON 3172",
+      "telefono": "445641"
+    },
+    {
+      "nombre": "FARMACIA MELFFI",
+      "direccion": "NECOCHEA 2986",
+      "telefono": "410011/ 410044"
+    },
+    {
+      "nombre": "FARMACIA MENESCALDI",
+      "direccion": "SARMIENTO Y VTE.LOPEZ",
+      "telefono": "424886"
+    },
+    {
+      "nombre": "FARMACIA MOGUES",
+      "direccion": "BARRIO CECO CASA 262",
+      "telefono": "451111"
+    },
+    {
+      "nombre": "FARMACIA OLAVARRIA",
+      "direccion": "NECOCHEA N° 2762",
+      "telefono": "444477"
+    },
+    {
+      "nombre": "FARMACIA PACHECO",
+      "direccion": "PELLEGRINI 3194",
+      "telefono": "427294"
+    },
+    {
+      "nombre": "FARMACIA PEREIRA",
+      "direccion": "AVELLANEDA Y STA.MARIA (C.HINOJO)",
+      "telefono": "491110"
+    },
+    {
+      "nombre": "FARMACIA QUEVEDO",
+      "direccion": "SAN MARTIN S/N HINOJO",
+      "telefono": "491116"
+    },
+    {
+      "nombre": "FARMACIA SAN JOSE",
+      "direccion": "PUEYRREDON 3166",
+      "telefono": "426648"
+    },
+    {
+      "nombre": "FARMACIA SPINA",
+      "direccion": "BELGRANO 1955",
+      "telefono": "Sólo WhatsApp 02284571855"
+    },
+    {
+      "nombre": "FARMACIA SPINOLA",
+      "direccion": "NECOCHEA 3282",
+      "telefono": "422263/ 441419"
+    },
+    {
+      "nombre": "FARMACIA STRIEBECK",
+      "direccion": "DEL VALLE 3901",
+      "telefono": "442515"
+    },
+    {
+      "nombre": "FARMACIA ZAPARARTE",
+      "direccion": "COLON 2569",
+      "telefono": "15231426"
+    }
+  ]
+}
