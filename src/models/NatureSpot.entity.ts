@@ -16,11 +16,11 @@ export class NatureSpot extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   image: string | null;
 
-  @Column({ type: 'decimal', precision: 10, scale: 8 })
-  latitude: number;
+  @Column({ type: 'varchar', length: 255 })
+  latitude: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 8 })
-  longitude: number;
+  @Column({ type: 'varchar', length: 255 })
+  longitude: string;
 
   @Column({ default: '', type: 'varchar', length: 255 })
   slug: string;

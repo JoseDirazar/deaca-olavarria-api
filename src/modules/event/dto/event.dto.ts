@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class EventDto {
   @IsString()
@@ -7,21 +7,21 @@ export class EventDto {
   @IsString()
   @IsNotEmpty()
   description: string;
-  @IsString()
+  @IsDate()
   @IsNotEmpty()
   start: Date;
-  @IsString()
+  @IsDate()
   @IsNotEmpty()
   end: Date;
+  @IsDate()
+  @IsNotEmpty()
+  time: Date;
   @IsString()
   @IsNotEmpty()
-  time: string;
-  @IsNumber()
+  latitude: string;
+  @IsString()
   @IsNotEmpty()
-  latitude: number;
-  @IsNumber()
-  @IsNotEmpty()
-  longitude: number;
+  longitude: string;
   @IsNumber()
   @IsNotEmpty()
   price: number;

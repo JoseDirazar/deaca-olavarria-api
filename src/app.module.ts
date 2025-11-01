@@ -18,8 +18,8 @@ import { AppReviewModule } from '@modules/app-review/app-review.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TendencyModule } from '@modules/tendency/tendency.module';
-import { EventsModule } from './modules/events/events.module';
 import { NatureSpotModule } from './modules/nature-spot/nature-spot.module';
+import { FarmaciasModule } from '@modules/pharmacy/pharmacy.module';
 
 @Module({
   imports: [
@@ -41,8 +41,8 @@ import { NatureSpotModule } from './modules/nature-spot/nature-spot.module';
     AnalyticsModule,
     ScheduleModule.forRoot(),
     TendencyModule,
-    EventsModule,
     NatureSpotModule,
+    FarmaciasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

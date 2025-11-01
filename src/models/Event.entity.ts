@@ -20,10 +20,10 @@ export class Event extends BaseEntity {
   time: Date;
 
   //TODO: cambiar en toda la api como se maneja latitud y longitud, guardarlo en un solo string y tal vez existe la prop para latlng en postgres
-  @Column({ type: 'decimal', precision: 10, scale: 8 })
+  @Column({ type: 'varchar', length: 255 })
   latitude: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 8 })
+  @Column({ type: 'varchar', length: 255 })
   longitude: string;
 
   @Column({ nullable: true, type: 'decimal', precision: 2 })

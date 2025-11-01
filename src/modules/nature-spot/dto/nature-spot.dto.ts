@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class NatureSpotDto {
   @IsString()
@@ -7,6 +7,9 @@ export class NatureSpotDto {
   @IsString()
   @IsNotEmpty()
   description: string;
+  @IsString()
+  @IsOptional()
+  comment: string;
   @IsString()
   @IsNotEmpty()
   latitude: string;

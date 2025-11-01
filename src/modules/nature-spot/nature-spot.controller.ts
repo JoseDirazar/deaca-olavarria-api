@@ -22,7 +22,10 @@ import {
   UploadFilesInterceptor,
   UploadInterceptor,
 } from 'src/infrastructure/interceptors/upload.interceptor';
-import { NATURE_SPOT_IMAGE_PATH } from 'src/infrastructure/utils/upload-paths';
+import {
+  NATURE_SPOT_IMAGE_PATH,
+  NATURE_SPOT_LOGO_PATH,
+} from 'src/infrastructure/utils/upload-paths';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
 
 @Controller('nature-spot')
@@ -80,7 +83,7 @@ export class NatureSpotController {
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.ADMIN)
   @Post(':id/image')
-  @UseInterceptors(UploadInterceptor(NATURE_SPOT_IMAGE_PATH, ['jpg', 'png', 'jpeg', 'webp']))
+  @UseInterceptors(UploadInterceptor(NATURE_SPOT_LOGO_PATH, ['jpg', 'png', 'jpeg', 'webp']))
   async uploadEstablishmentAvatar(
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFile() file: Express.Multer.File,
@@ -112,5 +115,17 @@ export class NatureSpotController {
       files.map((file) => file.path),
     );
     return { data: updatedNatureSpot };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Delete(':id/image/:imageId')
+  async deleteNatureSpotImage(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('imageId', new ParseUUIDPipe()) imageId: string,
+  ) {
+    const natureSpot = await this.natureSpotService.getNatureSpotById(id);
+    if (!natureSpot) throw new NotFoundException('Paseo turistico no encontrado');
+    return { data: await this.natureSpotService.deleteImage(natureSpot, imageId) };
   }
 }

@@ -1,62 +1,120 @@
 import {
-  Controller,
-  Post,
-  Body,
   BadRequestException,
-  Get,
-  Param,
-  UseGuards,
-  Put,
+  Body,
+  Controller,
   Delete,
+  Get,
+  NotFoundException,
+  Param,
   ParseUUIDPipe,
+  Post,
+  Put,
+  UploadedFile,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { EventService } from './event.service';
 import { EventDto } from './dto/event.dto';
-import { Event } from '@models/Event.entity';
-import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
 import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
+import {
+  UploadFilesInterceptor,
+  UploadInterceptor,
+} from 'src/infrastructure/interceptors/upload.interceptor';
+import { EVENT_IMAGE_PATH, EVENT_IMAGES_PATH } from 'src/infrastructure/utils/upload-paths';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { JwtAuthGuard } from '@modules/iam/auth/guards/jwt-auth.guard';
+import { EventService } from './event.service';
 
-// TODO: Handle errors
 @Controller('event')
 export class EventController {
-  constructor(private readonly eventService: EventService) {}
-
-  @Post()
-  async createEvent(@Body() eventDto: EventDto): Promise<Event | null> {
-    const event = await this.eventService.createEvent(eventDto);
-    if (!event) throw new BadRequestException({ message: 'No se pudo crear el evento' });
-    return event;
-  }
+  constructor(private readonly eventsService: EventService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesAllowed(Roles.ADMIN)
-  async getEvents(): Promise<Event[]> {
-    return this.eventService.getEvents();
-  }
-
-  @Get('active')
-  async getActiveEvents(): Promise<Event[]> {
-    return this.eventService.getActiveEvents();
+  async getEvents() {
+    return { data: await this.eventsService.getEvents() };
   }
 
   @Get(':id')
-  async getEventById(@Param('id', new ParseUUIDPipe()) id: string): Promise<Event | null> {
-    return this.eventService.getEventById(id);
+  async getEventById(@Param('id') id: string) {
+    return { data: await this.eventsService.getEventById(id) };
+  }
+
+  @Post()
+  async createEvent(@Body() eventDto: EventDto) {
+    const event = await this.eventsService.createEvent(eventDto);
+    return { data: event, message: `Evento ${event.name} creado exitosamente` };
   }
 
   @Put(':id')
-  async updateEvent(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() eventDto: EventDto,
-  ): Promise<Event | null> {
-    return this.eventService.updateEvent(id, eventDto);
+  async updateEvent(@Param('id') id: string, @Body() eventDto: EventDto) {
+    const event = await this.eventsService.getEventById(id);
+    if (!event) {
+      throw new BadRequestException('Evento no encontrado');
+    }
+    return {
+      data: await this.eventsService.updateEvent(event, eventDto),
+      message: `Evento ${event.name} actualizado exitosamente`,
+    };
   }
 
   @Delete(':id')
-  async deleteEvent(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
-    await this.eventService.deleteEvent(id);
+  async deleteEvent(@Param('id') id: string) {
+    const event = await this.eventsService.getEventById(id);
+    if (!event) {
+      throw new BadRequestException('Evento no encontrado');
+    }
+    return {
+      data: await this.eventsService.deleteEvent(event),
+      message: `Evento ${event.name} eliminado exitosamente`,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Post(':id/image')
+  @UseInterceptors(UploadInterceptor(EVENT_IMAGE_PATH, ['jpg', 'png', 'jpeg', 'webp']))
+  async uploadEstablishmentAvatar(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('No se envio un archivo');
+
+    const event = await this.eventsService.getEventById(id);
+    if (!event) throw new NotFoundException('Evento no encontrado');
+
+    const updatedEvent = await this.eventsService.updateImage(event, file.path);
+    return { data: updatedEvent };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Post(':id/images')
+  @UseInterceptors(UploadFilesInterceptor(EVENT_IMAGES_PATH, ['jpg', 'png', 'jpeg', 'webp']))
+  async uploadEstablishmentImages(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files?.length) throw new BadRequestException('No se envio un archivo');
+
+    const event = await this.eventsService.getEventById(id);
+    if (!event) throw new NotFoundException('Evento no encontrado');
+
+    const updatedEvent = await this.eventsService.uploadImages(
+      event,
+      files.map((file) => file.path),
+    );
+    return { data: updatedEvent };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @RolesAllowed(Roles.ADMIN)
+  @Delete(':id/image/:imageId')
+  async deleteEventImage(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('imageId', new ParseUUIDPipe()) imageId: string,
+  ) {
+    const event = await this.eventsService.getEventById(id);
+    if (!event) throw new NotFoundException('Evento no encontrado');
+    return { data: await this.eventsService.deleteImage(event, imageId) };
   }
 }

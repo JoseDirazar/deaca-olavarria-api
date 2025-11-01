@@ -52,10 +52,10 @@ export class Establishment extends BaseEntity {
   @Column({ nullable: true, type: 'varchar', length: 255 })
   facebook: string;
 
-  @Column({ nullable: true, type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true }) //TODO sacar nullable
   latitude: string;
 
-  @Column({ nullable: true, type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true }) //TODO sacar nullable
   longitude: string;
 
   @Column({ type: 'enum', enum: EstablishmentStatus, default: EstablishmentStatus.PENDING })

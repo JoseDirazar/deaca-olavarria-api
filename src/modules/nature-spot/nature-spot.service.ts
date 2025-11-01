@@ -1,10 +1,12 @@
 import { NatureSpot } from '@models/NatureSpot.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NatureSpotDto } from './dto/nature-spot.dto';
 import { Image } from '@models/Image.entity';
 import { UploadService } from '@modules/upload/upload.service';
+import { join } from 'path';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class NatureSpotService {
@@ -19,7 +21,7 @@ export class NatureSpotService {
   }
 
   async getNatureSpotById(id: string): Promise<NatureSpot | null> {
-    return this.natureSpotRepository.findOne({ where: { id } });
+    return this.natureSpotRepository.findOne({ where: { id }, relations: ['gallery'] });
   }
 
   async createNatureSpot(natureSpotDto: NatureSpotDto): Promise<NatureSpot> {
@@ -35,6 +37,27 @@ export class NatureSpotService {
   }
 
   async deleteNatureSpot(natureSpot: NatureSpot): Promise<void> {
+    if (natureSpot.gallery && natureSpot.gallery.length > 0) {
+      for (const image of natureSpot.gallery) {
+        try {
+          const imagePath = join('./upload/user/nature-spot/', image.fileName);
+          await fs.unlink(imagePath);
+        } catch (error) {
+          console.error(`Error al eliminar imagen ${image.fileName}:`, error);
+        }
+      }
+      await this.imageRepository.remove(natureSpot.gallery);
+    }
+
+    if (natureSpot.image) {
+      try {
+        const imagePath = join('./upload/user/nature-spot/logo/', natureSpot.image);
+        await fs.unlink(imagePath);
+      } catch (error) {
+        console.error(`Error al eliminar avatar ${natureSpot.image}:`, error);
+      }
+    }
+
     await this.natureSpotRepository.remove(natureSpot);
   }
 
@@ -53,7 +76,13 @@ export class NatureSpotService {
   }
 
   async uploadImages(natureSpot: NatureSpot, fileNames: string[]) {
-    const images = fileNames.map((fileName) => {
+    if (!fileNames) throw new Error('No se proporcionaron archivos');
+    let normalizedPaths = await Promise.all(
+      fileNames.map(async (fileName) => this.uploadService.normalizeImage(fileName)),
+    );
+
+    if (!normalizedPaths) return;
+    const images = normalizedPaths.map((fileName) => {
       const image = this.imageRepository.create({
         fileName,
         natureSpot,
@@ -64,7 +93,20 @@ export class NatureSpotService {
     await this.imageRepository.save(images);
     return await this.natureSpotRepository.findOne({
       where: { id: natureSpot.id },
-      relations: ['images'],
+      relations: ['gallery'],
     });
+  }
+
+  async deleteImage(natureSpot: NatureSpot, imageId: string) {
+    const image = await this.imageRepository.findOne({
+      where: { id: imageId },
+      relations: ['natureSpot'],
+    });
+    if (!image) throw new NotFoundException('Imagen no encontrada');
+    if (image.natureSpot.id !== natureSpot.id)
+      throw new UnauthorizedException('No tienes permiso para eliminar esta imagen');
+    const imagePath = this.uploadService.resolveUploadPath('nature-spot', image.fileName);
+    await this.uploadService.deleteFileIfExists(imagePath);
+    return await this.imageRepository.remove(image);
   }
 }
