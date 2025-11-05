@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   HttpCode,
   HttpStatus,
@@ -39,7 +40,8 @@ export class AuthController {
   @Post('sign-up')
   async createUser(@Body() { email, password, firstName, lastName }: SignUpDto) {
     const userExist = await this.userService.userExistByEmail(email);
-    if (userExist) throw new BadRequestException({ message: 'User already exists' });
+    // TODO: Usar esta excepcion en toda la api
+    if (userExist) throw new ConflictException('User already exists');
 
     await this.userService.createUser({
       email,

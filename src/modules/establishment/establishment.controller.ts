@@ -84,7 +84,6 @@ export class EstablishmentController {
 
   @Get(':slug')
   async getEstablishmentBySlug(@Param('slug') slug: string, @Req() req: Request) {
-    console.log(slug);
     const establishment = await this.establishmentService.getEstablishmentBySlug(slug);
     if (!establishment)
       throw new NotFoundException({ message: 'No se encontró el establecimiento' });

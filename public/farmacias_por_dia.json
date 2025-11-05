@@ -1,0 +1,467 @@
+[
+  {
+    "dia_semana": "SABADO",
+    "dia_mes": "1",
+    "farmacias": [
+      {
+        "nombre": "CENTRAL"
+      },
+      {
+        "nombre": "MARTEL"
+      },
+      {
+        "nombre": "FAILLA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "DOMINGO",
+    "dia_mes": "2",
+    "farmacias": [
+      {
+        "nombre": "BETZ"
+      },
+      {
+        "nombre": "OLAVARRIA"
+      },
+      {
+        "nombre": "PACHECO"
+      },
+      {
+        "nombre": "ZAPARARTE"
+      }
+    ]
+  },
+  {
+    "dia_semana": "LUNES",
+    "dia_mes": "3",
+    "farmacias": [
+      {
+        "nombre": "FENIX"
+      },
+      {
+        "nombre": "FERRERO"
+      },
+      {
+        "nombre": "SAN JOSE"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MARTES",
+    "dia_mes": "4",
+    "farmacias": [
+      {
+        "nombre": "ALVAREZ"
+      },
+      {
+        "nombre": "BALDINI"
+      },
+      {
+        "nombre": "FAILLA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MIERCOLES",
+    "dia_mes": "5",
+    "farmacias": [
+      {
+        "nombre": "DISANTI"
+      },
+      {
+        "nombre": "GOMEZ"
+      },
+      {
+        "nombre": "LUJAN"
+      }
+    ]
+  },
+  {
+    "dia_semana": "JUEVES",
+    "dia_mes": "6",
+    "farmacias": [
+      {
+        "nombre": "FENIX"
+      },
+      {
+        "nombre": "LA ESENCIA"
+      },
+      {
+        "nombre": "PACHECO"
+      }
+    ]
+  },
+  {
+    "dia_semana": "VIERNES",
+    "dia_mes": "7",
+    "farmacias": [
+      {
+        "nombre": "CORREA"
+      },
+      {
+        "nombre": "MAGISTRAL"
+      },
+      {
+        "nombre": "MELFFI"
+      }
+    ]
+  },
+  {
+    "dia_semana": "SABADO",
+    "dia_mes": "8",
+    "farmacias": [
+      {
+        "nombre": "LAVIN"
+      },
+      {
+        "nombre": "MARTINEZ"
+      },
+      {
+        "nombre": "STRIEBECK"
+      }
+    ]
+  },
+  {
+    "dia_semana": "DOMINGO",
+    "dia_mes": "9",
+    "farmacias": [
+      {
+        "nombre": "DELLA MAGGIORA"
+      },
+      {
+        "nombre": "DISANTI"
+      },
+      {
+        "nombre": "SPINOLA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "LUNES",
+    "dia_mes": "10",
+    "farmacias": [
+      {
+        "nombre": "CENTRAL"
+      },
+      {
+        "nombre": "MARTEL"
+      },
+      {
+        "nombre": "MOGUES"
+      },
+      {
+        "nombre": "SPINA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MARTES",
+    "dia_mes": "11",
+    "farmacias": [
+      {
+        "nombre": "BETZ"
+      },
+      {
+        "nombre": "OLAVARRIA"
+      },
+      {
+        "nombre": "PACHECO"
+      },
+      {
+        "nombre": "ZAPARARTE"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MIERCOLES",
+    "dia_mes": "12",
+    "farmacias": [
+      {
+        "nombre": "FENIX"
+      },
+      {
+        "nombre": "FERRERO"
+      },
+      {
+        "nombre": "SAN JOSE"
+      }
+    ]
+  },
+  {
+    "dia_semana": "JUEVES",
+    "dia_mes": "13",
+    "farmacias": [
+      {
+        "nombre": "ALVAREZ"
+      },
+      {
+        "nombre": "BALDINI"
+      },
+      {
+        "nombre": "FAILLA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "VIERNES",
+    "dia_mes": "14",
+    "farmacias": [
+      {
+        "nombre": "BUENO"
+      },
+      {
+        "nombre": "GOMEZ"
+      },
+      {
+        "nombre": "LUJAN"
+      }
+    ]
+  },
+  {
+    "dia_semana": "SABADO",
+    "dia_mes": "15",
+    "farmacias": [
+      {
+        "nombre": "ALEM"
+      },
+      {
+        "nombre": "LA ESENCIA"
+      },
+      {
+        "nombre": "MENESCALDI"
+      }
+    ]
+  },
+  {
+    "dia_semana": "DOMINGO",
+    "dia_mes": "16",
+    "farmacias": [
+      {
+        "nombre": "CORREA"
+      },
+      {
+        "nombre": "MAGISTRAL"
+      },
+      {
+        "nombre": "MELFFI"
+      }
+    ]
+  },
+  {
+    "dia_semana": "LUNES",
+    "dia_mes": "17",
+    "farmacias": [
+      {
+        "nombre": "LAVIN"
+      },
+      {
+        "nombre": "MARTINEZ"
+      },
+      {
+        "nombre": "STRIEBECK"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MARTES",
+    "dia_mes": "18",
+    "farmacias": [
+      {
+        "nombre": "DELLA MAGGIORA"
+      },
+      {
+        "nombre": "DISANTI"
+      },
+      {
+        "nombre": "SPINOLA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MIERCOLES",
+    "dia_mes": "19",
+    "farmacias": [
+      {
+        "nombre": "CENTRAL"
+      },
+      {
+        "nombre": "MARTEL"
+      },
+      {
+        "nombre": "MOGUES"
+      },
+      {
+        "nombre": "SPINA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "JUEVES",
+    "dia_mes": "20",
+    "farmacias": [
+      {
+        "nombre": "BUENO"
+      },
+      {
+        "nombre": "OLAVARRIA"
+      },
+      {
+        "nombre": "PACHECO"
+      }
+    ]
+  },
+  {
+    "dia_semana": "VIERNES",
+    "dia_mes": "21",
+    "farmacias": [
+      {
+        "nombre": "DISANTI"
+      },
+      {
+        "nombre": "FERRERO"
+      },
+      {
+        "nombre": "SAN JOSE"
+      }
+    ]
+  },
+  {
+    "dia_semana": "SABADO",
+    "dia_mes": "22",
+    "farmacias": [
+      {
+        "nombre": "ALVAREZ"
+      },
+      {
+        "nombre": "BALDINI"
+      },
+      {
+        "nombre": "FAILLA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "DOMINGO",
+    "dia_mes": "23",
+    "farmacias": [
+      {
+        "nombre": "BUENO"
+      },
+      {
+        "nombre": "GOMEZ"
+      },
+      {
+        "nombre": "LUJAN"
+      }
+    ]
+  },
+  {
+    "dia_semana": "LUNES",
+    "dia_mes": "24",
+    "farmacias": [
+      {
+        "nombre": "ALEM"
+      },
+      {
+        "nombre": "LA ESENCIA"
+      },
+      {
+        "nombre": "MENESCALDI"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MARTES",
+    "dia_mes": "25",
+    "farmacias": [
+      {
+        "nombre": "CORREA"
+      },
+      {
+        "nombre": "MAGISTRAL"
+      },
+      {
+        "nombre": "MELFFI"
+      }
+    ]
+  },
+  {
+    "dia_semana": "MIERCOLES",
+    "dia_mes": "26",
+    "farmacias": [
+      {
+        "nombre": "LAVIN"
+      },
+      {
+        "nombre": "MARTINEZ"
+      },
+      {
+        "nombre": "STRIEBECK"
+      }
+    ]
+  },
+  {
+    "dia_semana": "JUEVES",
+    "dia_mes": "27",
+    "farmacias": [
+      {
+        "nombre": "DELLA MAGGIORA"
+      },
+      {
+        "nombre": "DISANTI"
+      },
+      {
+        "nombre": "SPINOLA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "VIERNES",
+    "dia_mes": "28",
+    "farmacias": [
+      {
+        "nombre": "CENTRAL"
+      },
+      {
+        "nombre": "MARTEL"
+      },
+      {
+        "nombre": "MOGUES"
+      },
+      {
+        "nombre": "SPINA"
+      }
+    ]
+  },
+  {
+    "dia_semana": "SABADO",
+    "dia_mes": "29",
+    "farmacias": [
+      {
+        "nombre": "BETZ"
+      },
+      {
+        "nombre": "OLAVARRIA"
+      },
+      {
+        "nombre": "PACHECO"
+      }
+    ]
+  },
+  {
+    "dia_semana": "DOMINGO",
+    "dia_mes": "30",
+    "farmacias": [
+      {
+        "nombre": "FENIX"
+      },
+      {
+        "nombre": "FERRERO"
+      },
+      {
+        "nombre": "SAN JOSE"
+      }
+    ]
+  }
+]

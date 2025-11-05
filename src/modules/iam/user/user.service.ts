@@ -146,14 +146,10 @@ export class UserService {
 
   async createWithGoogle(googleUser: TokenPayload): Promise<User> {
     const user = await UserMapper.createUserWithGooglePayload(googleUser);
-    console.log('google user', user);
     if (googleUser.picture) {
-      console.log('google user picture', googleUser.picture);
       const avatarFilePath = await this.downloadAndSaveGoogleAvatar(googleUser.picture);
-      console.log('avatar file path', avatarFilePath);
       user.avatar = avatarFilePath!;
     }
-    console.log('user to save', user);
     const savedUser = await this.userRepository.save(user);
     return savedUser;
   }

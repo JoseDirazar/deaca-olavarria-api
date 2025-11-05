@@ -26,15 +26,20 @@ export class EstablishmentService {
   ) {}
 
   async getPaginatedEstablishments(params: EstablishmentsPaginationQueryParamsDto) {
+    const search = params['search'];
     const page = params?.page || 1;
     const limit = params?.limit || 10;
     const sortBy = params.sortBy ?? 'createdAt';
     const sortOrder = (params.sortOrder ?? 'DESC').toUpperCase() as 'ASC' | 'DESC';
 
     // Normalizar categories: convertir string a array si es necesario
+    const acceptCreditCard = params.acceptCreditCard;
+    const acceptDebitCard = params.acceptDebitCard;
+    const acceptMercadoPago = params.acceptMercadoPago;
+    const acceptCtaDNI = params.acceptCtaDNI;
+    const hasDiscount = params.hasDiscount;
     const categories = params['categories[]'];
     const subcategories = params['subcategories[]'];
-    const search = params['search'];
     const normalizedCategories = categories
       ? Array.isArray(categories)
         ? categories
@@ -91,6 +96,36 @@ export class EstablishmentService {
         'establishments.name ILIKE :search OR establishments.name ILIKE :search',
         { search: `%${search.trim()}%` },
       );
+    }
+
+    if (acceptCreditCard) {
+      establishmentsQueryBuilder.andWhere('establishments.acceptCreditCard = :acceptCreditCard', {
+        acceptCreditCard,
+      });
+    }
+
+    if (acceptDebitCard) {
+      establishmentsQueryBuilder.andWhere('establishments.acceptDebitCard = :acceptDebitCard', {
+        acceptDebitCard,
+      });
+    }
+
+    if (acceptMercadoPago) {
+      establishmentsQueryBuilder.andWhere('establishments.acceptMercadoPago = :acceptMercadoPago', {
+        acceptMercadoPago,
+      });
+    }
+
+    if (acceptCtaDNI) {
+      establishmentsQueryBuilder.andWhere('establishments.acceptCtaDNI = :acceptCtaDNI', {
+        acceptCtaDNI,
+      });
+    }
+
+    if (hasDiscount) {
+      establishmentsQueryBuilder.andWhere('establishments.hasDiscount = :hasDiscount', {
+        hasDiscount,
+      });
     }
 
     // Ordenamiento

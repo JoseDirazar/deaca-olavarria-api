@@ -8,4 +8,9 @@ export class EstablishmentsPaginationQueryParamsDto extends BasePaginationQueryP
   sortBy?: 'name' | 'address' | 'createdAt';
   // Sort direction
   sortOrder?: 'ASC' | 'DESC';
+  acceptCreditCard?: boolean;
+  acceptDebitCard?: boolean;
+  acceptMercadoPago?: boolean;
+  acceptCtaDNI?: boolean;
+  hasDiscount?: boolean;
 }

@@ -1,0 +1,233 @@
+[
+  {
+    "nombre": "FARMACIA ALEM",
+    "direccion": "RIVADAVIA 2957",
+    "telefono": "425245",
+    "lat": -36.8925663,
+    "lng": -60.3212481
+  },
+  {
+    "nombre": "FARMACIA ALVAREZ",
+    "direccion": "BELGRANO Y MORENO",
+    "telefono": "420560/ 422488",
+    "lat": -36.8938187,
+    "lng": -60.3207721
+  },
+  {
+    "nombre": "FARMACIA BALDINI",
+    "direccion": "URQUIZA 3920",
+    "telefono": "428438/ 427910",
+    "lat": -36.8946347,
+    "lng": -60.302854
+  },
+  {
+    "nombre": "FARMACIA BETZ",
+    "direccion": "PRINGLES 2035",
+    "telefono": "411690",
+    "lat": -36.9028987,
+    "lng": -60.3240149
+  },
+  {
+    "nombre": "FARMACIA BUENO",
+    "direccion": "LAVALLE Y GRAL.PAZ",
+    "telefono": "414651/15622985",
+    "lat": -36.8937167,
+    "lng": -60.32334989999999
+  },
+  {
+    "nombre": "FARMACIA CENTRAL",
+    "direccion": "VTE. LOPEZ Y GRAL.PAZ",
+    "telefono": "420674",
+    "lat": -36.8938056,
+    "lng": -60.3239901
+  },
+  {
+    "nombre": "FARMACIA CORREA",
+    "direccion": "COLON 2084",
+    "telefono": "412201",
+    "lat": -36.8851651,
+    "lng": -60.32348489999999
+  },
+  {
+    "nombre": "FARMACIA DARI",
+    "direccion": "M.SMIRNOFF 2130 (S.BAYAS)",
+    "telefono": "490102",
+    "lat": -36.931898,
+    "lng": -60.1608442
+  },
+  {
+    "nombre": "FARMACIA DELLA MAGGIORA",
+    "direccion": "SARMIENTO 1746",
+    "telefono": "415111",
+    "lat": -36.8787977,
+    "lng": -60.3212031
+  },
+  {
+    "nombre": "FARMACIA DISANTI",
+    "direccion": "RIVADAVIA Y BUCHARDO",
+    "telefono": "427868",
+    "lat": -36.9004992,
+    "lng": -60.3308282
+  },
+  {
+    "nombre": "FARMACIA FAILLA",
+    "direccion": "CHACABUCO Y DEL VALLE",
+    "telefono": "426716/ 271815",
+    "lat": -36.9028319,
+    "lng": -60.321534
+  },
+  {
+    "nombre": "FARMACIA FENIX",
+    "direccion": "VTE. LOPEZ 2257",
+    "telefono": "430013",
+    "lat": -36.8965401,
+    "lng": -60.32784969999999
+  },
+  {
+    "nombre": "FARMACIA FERRERO",
+    "direccion": "TRABAJADORES 3335",
+    "telefono": "425355",
+    "lat": -36.8937167,
+    "lng": -60.32334989999999
+  },
+  {
+    "nombre": "FARMACIA GOMEZ",
+    "direccion": "COLON 1745",
+    "telefono": "411295",
+    "lat": -36.8825398,
+    "lng": -60.325821
+  },
+  {
+    "nombre": "FARMACIA GOMEZ DE S.CHICA",
+    "direccion": "CENTENARIO 1299 (S.CHICA)",
+    "telefono": "423560",
+    "lat": -36.8424178,
+    "lng": -60.2259116
+  },
+  {
+    "nombre": "FARMACIA LA ESENCIA",
+    "direccion": "PRINGLES Y BOLIVAR",
+    "telefono": "418484",
+    "lat": -36.9004696,
+    "lng": -60.3207898
+  },
+  {
+    "nombre": "FARMACIA LAVIN",
+    "direccion": "PRINGLES 4402",
+    "telefono": "4212170",
+    "lat": -36.8872312,
+    "lng": -60.30359079999999
+  },
+  {
+    "nombre": "FARMACIA LUJAN",
+    "direccion": "COLON Y URQUIZA",
+    "telefono": "15202045",
+    "lat": -36.8992723,
+    "lng": -60.3091422
+  },
+  {
+    "nombre": "FARMACIA MAGISTRAL",
+    "direccion": "SARMIENTO Y MORENO",
+    "telefono": "431313",
+    "lat": -36.886524,
+    "lng": -60.3114595
+  },
+  {
+    "nombre": "FARMACIA MARTEL",
+    "direccion": "ESPAÑA Y GRAL. PAZ",
+    "telefono": "423530/ 445550",
+    "lat": -36.8935338,
+    "lng": -60.3243319
+  },
+  {
+    "nombre": "FARMACIA MARTINEZ",
+    "direccion": "COLON 3172",
+    "telefono": "445641",
+    "lat": -36.8923958,
+    "lng": -60.31452669999999
+  },
+  {
+    "nombre": "FARMACIA MELFFI",
+    "direccion": "NECOCHEA 2986",
+    "telefono": "410011/ 410044",
+    "lat": -36.8931055,
+    "lng": -60.3184709
+  },
+  {
+    "nombre": "FARMACIA MENESCALDI",
+    "direccion": "SARMIENTO Y VTE.LOPEZ",
+    "telefono": "424886",
+    "lat": -36.8924459,
+    "lng": -60.3224
+  },
+  {
+    "nombre": "FARMACIA MOGUES",
+    "direccion": "BARRIO CECO CASA 262",
+    "telefono": "451111",
+    "lat": -36.9220608,
+    "lng": -60.3213515
+  },
+  {
+    "nombre": "FARMACIA OLAVARRIA",
+    "direccion": "NECOCHEA N° 2762",
+    "telefono": "444477",
+    "lat": -36.8916648,
+    "lng": -60.3203362
+  },
+  {
+    "nombre": "FARMACIA PACHECO",
+    "direccion": "PELLEGRINI 3194",
+    "telefono": "427294",
+    "lat": -36.9034997,
+    "lng": -60.3041613
+  },
+  {
+    "nombre": "FARMACIA PEREIRA",
+    "direccion": "AVELLANEDA Y STA.MARIA (C.HINOJO)",
+    "telefono": "491110",
+    "lat": -36.8787285,
+    "lng": -60.1747286
+  },
+  {
+    "nombre": "FARMACIA QUEVEDO",
+    "direccion": "SAN MARTIN S/N HINOJO",
+    "telefono": "491116",
+    "lat": -36.8797903,
+    "lng": -60.1776076
+  },
+  {
+    "nombre": "FARMACIA SAN JOSE",
+    "direccion": "PUEYRREDON 3166",
+    "telefono": "426648",
+    "lat": -36.9046428,
+    "lng": -60.3300181
+  },
+  {
+    "nombre": "FARMACIA SPINA",
+    "direccion": "BELGRANO 1955",
+    "telefono": "Sólo WhatsApp 02284571855",
+    "lat": -36.8873514,
+    "lng": -60.3283857
+  },
+  {
+    "nombre": "FARMACIA SPINOLA",
+    "direccion": "NECOCHEA 3282",
+    "telefono": "422263/ 441419",
+    "lat": -36.895124,
+    "lng": -60.3160847
+  },
+  {
+    "nombre": "FARMACIA STRIEBECK",
+    "direccion": "DEL VALLE 3901",
+    "telefono": "442515",
+    "lat": -36.8851372,
+    "lng": -60.30797829999999
+  },
+  {
+    "nombre": "FARMACIA ZAPARARTE",
+    "direccion": "COLON 2569",
+    "telefono": "15231426",
+    "lat": -36.8880677,
+    "lng": -60.31910389999999
+  }
+]

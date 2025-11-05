@@ -23,6 +23,10 @@ export class CategoryService {
   }
 
   async getCategories({ exclude, select }: { exclude?: string[]; select?: string[] }) {
+    if (typeof select === 'string') {
+      select = [select];
+    }
+
     if (select) {
       const categories = await this.categoryRepository.find({
         relations: ['establishments'],
@@ -30,7 +34,6 @@ export class CategoryService {
           name: In(select),
         },
       });
-      console.log('SELECT', categories);
       return categories;
     }
     if (exclude) {
