@@ -59,7 +59,11 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /db-entrypoint
 
 # Ignore all files inside upload folder except index.html
-/upload/user/*
+/upload/assets/*
+/upload/category/*
 /upload/establishment/*
 /upload/establishment/logo/*
-/upload/category/*
+/upload/user/*
+/upload/event/*
+/upload/nature-spot/*
+

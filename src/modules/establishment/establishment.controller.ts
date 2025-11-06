@@ -99,7 +99,6 @@ export class EstablishmentController {
     return { data: establishment };
   }
 
-  // Owner create establishment for self
   @UseGuards(JwtAuthGuard)
   @RolesAllowed(Roles.ADMIN, Roles.BUSINESS_OWNER)
   @Post('mine')
@@ -108,9 +107,9 @@ export class EstablishmentController {
       establishmentDto.name,
     );
     if (establishmentExistByName)
-      throw new BadRequestException({
-        message: `Ya existe un establecimiento con el nombre ${establishmentDto.name}. Por favor, elige otro nombre.`,
-      });
+      throw new BadRequestException(
+        `Ya existe un establecimiento con el nombre ${establishmentDto.name}. Por favor, elige otro nombre.`,
+      );
     const establishment = await this.establishmentService.createEstablishment(
       establishmentDto,
       user,
