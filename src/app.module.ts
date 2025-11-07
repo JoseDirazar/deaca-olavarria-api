@@ -20,6 +20,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TendencyModule } from '@modules/tendency/tendency.module';
 import { NatureSpotModule } from './modules/nature-spot/nature-spot.module';
 import { FarmaciasModule } from '@modules/pharmacy/pharmacy.module';
+import { SponsorModule } from './modules/sponsor/sponsor.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { FarmaciasModule } from '@modules/pharmacy/pharmacy.module';
     TendencyModule,
     NatureSpotModule,
     FarmaciasModule,
+    SponsorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

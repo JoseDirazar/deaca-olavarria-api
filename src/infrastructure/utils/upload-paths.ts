@@ -6,3 +6,4 @@ export const NATURE_SPOT_LOGO_PATH = './upload/nature-spot/logo/';
 export const NATURE_SPOT_IMAGE_PATH = './upload/nature-spot/';
 export const EVENT_IMAGES_PATH = './upload/event/';
 export const EVENT_IMAGE_PATH = './upload/event/logo/';
+export const SPONSOR_IMAGE_PATH = './upload/sponsor/';

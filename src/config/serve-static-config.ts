@@ -48,4 +48,9 @@ export const serveStaticModuleOptions = (dirname: string) => [
     serveRoot: '/event/logo',
     serveStaticOptions,
   },
+  {
+    rootPath: join(dirname, '..', '..', 'upload', 'sponsor'),
+    serveRoot: '/sponsor',
+    serveStaticOptions,
+  },
 ];
