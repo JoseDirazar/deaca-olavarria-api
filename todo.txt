@@ -1,0 +1,13 @@
+landing poner lema de deaca
+tags para el emprendimiento y poder buscarlo
+lista emprendimientos admin pendientes primeros
+admin puede cambiar datos de cualquier emprendimiento
+lista admin emprendimientos no se ordena la tabla segun pendientes 
+lista admin en el nombre redirije con uuid
+more info
+
+boton 24 hs hover feo
+
+DAR PRIORIDAD EN LA BUSQUEDA A QUIEN PAGA
+
+sobre nosotros cambiar lema a el vvalor de lo cercano

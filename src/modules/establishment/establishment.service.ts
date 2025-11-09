@@ -26,13 +26,16 @@ export class EstablishmentService {
   ) {}
 
   async getPaginatedEstablishments(params: EstablishmentsPaginationQueryParamsDto) {
+    console.log('getPaginatedEstablishments - params:', params);
+    console.log('getPaginatedEstablishments - params.categories:', params['categories[]']);
+    console.log('getPaginatedEstablishments - params.subcategories:', params['subcategories[]']);
+
     const search = params['search'];
     const page = params?.page || 1;
     const limit = params?.limit || 10;
     const sortBy = params.sortBy ?? 'createdAt';
     const sortOrder = (params.sortOrder ?? 'DESC').toUpperCase() as 'ASC' | 'DESC';
 
-    // Normalizar categories: convertir string a array si es necesario
     const acceptCreditCard = params.acceptCreditCard;
     const acceptDebitCard = params.acceptDebitCard;
     const acceptMercadoPago = params.acceptMercadoPago;
@@ -40,6 +43,8 @@ export class EstablishmentService {
     const hasDiscount = params.hasDiscount;
     const categories = params['categories[]'];
     const subcategories = params['subcategories[]'];
+
+    // Normalizar categories y subcategories
     const normalizedCategories = categories
       ? Array.isArray(categories)
         ? categories
@@ -70,34 +75,28 @@ export class EstablishmentService {
       .leftJoinAndSelect('establishments.categories', 'categories')
       .leftJoinAndSelect('establishments.subcategories', 'subcategories');
 
-    // Filtrar por categorías si existen
-    if (normalizedCategories && normalizedCategories.length > 0) {
-      establishmentsQueryBuilder.andWhere(
-        'EXISTS (SELECT 1 FROM establishment_categories_category ecc ' +
-          'JOIN category c ON ecc.category_id = c.id ' +
-          'WHERE ecc.establishment_id = establishments.id AND c.name IN (:...categories))',
-        { categories: normalizedCategories },
-      );
-    }
-
-    // Filtrar por subcategorias si existen
-    if (normalizedSubcategories && normalizedSubcategories.length > 0) {
-      establishmentsQueryBuilder.andWhere(
-        'EXISTS (SELECT 1 FROM establishment_categories_subcategory ecs ' +
-          'JOIN subcategory s ON ecs.subcategory_id = s.id ' +
-          'WHERE ecs.establishment_id = establishments.id AND s.name IN (:...subcategories))',
-        { subcategories: normalizedSubcategories },
-      );
-    }
-
-    // Filtrar por búsqueda si existe
+    // Filtrar por búsqueda
     if (search && search.trim().length > 0) {
-      establishmentsQueryBuilder.andWhere(
-        'establishments.name ILIKE :search OR establishments.name ILIKE :search',
-        { search: `%${search.trim()}%` },
-      );
+      establishmentsQueryBuilder.andWhere('establishments.name ILIKE :search', {
+        search: `%${search.trim()}%`,
+      });
     }
 
+    // Filtrar por categorías
+    if (normalizedCategories && normalizedCategories.length > 0) {
+      establishmentsQueryBuilder.andWhere('categories.name IN (:...categoryName)', {
+        categoryName: normalizedCategories,
+      });
+    }
+
+    // Filtrar por subcategorías
+    if (normalizedSubcategories && normalizedSubcategories.length > 0) {
+      establishmentsQueryBuilder.andWhere('subcategories.name IN (:...subcategoryName)', {
+        subcategoryName: normalizedSubcategories,
+      });
+    }
+
+    // Filtros de métodos de pago
     if (acceptCreditCard) {
       establishmentsQueryBuilder.andWhere('establishments.acceptCreditCard = :acceptCreditCard', {
         acceptCreditCard,
@@ -137,6 +136,12 @@ export class EstablishmentService {
     const sortColumn = sortWhitelist[sortBy] ?? sortWhitelist['createdAt'];
     establishmentsQueryBuilder.orderBy(sortColumn, sortOrder);
 
+    // IMPORTANTE: Agrupar para evitar duplicados cuando hay múltiples categorías/subcategorías
+    establishmentsQueryBuilder.groupBy('establishments.id');
+    // Agregar categories.id y subcategories.id al GROUP BY para poder usar leftJoinAndSelect
+    establishmentsQueryBuilder.addGroupBy('categories.id');
+    establishmentsQueryBuilder.addGroupBy('subcategories.id');
+
     // Paginación
     const [establishments, total] = await establishmentsQueryBuilder
       .skip((page - 1) * limit)
@@ -150,7 +155,6 @@ export class EstablishmentService {
       page,
     };
   }
-
   async getAdminEstablishmentsChart() {
     const totalEstablishments = await this.establishmentRepository
       .createQueryBuilder('establishment')

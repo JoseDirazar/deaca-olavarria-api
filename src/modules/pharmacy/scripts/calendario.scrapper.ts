@@ -18,6 +18,7 @@ export function obtenerFarmaciasPorDia(
 
   if (tablas.length >= 1) {
     const filas = $(tablas[0]).find('tr');
+    // @ts-ignore
     filas.each((_, fila) => {
       const columnas = $(fila).find('td');
       if (columnas.length >= 2) {
@@ -27,6 +28,7 @@ export function obtenerFarmaciasPorDia(
         const diaMes = $(columnas[1]).text().trim();
         const farmacias: any[] = [];
 
+        // @ts-ignore
         columnas.slice(2).each((_, col) => {
           const nombreFarmacia = $(col).text().trim();
           if (nombreFarmacia) {

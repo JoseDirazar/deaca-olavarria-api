@@ -4,16 +4,18 @@ import {
   Param,
   Post,
   Body,
-  Delete,
   Put,
-  BadRequestException,
+  Delete,
   UseGuards,
-  UseInterceptors,
-  ParseUUIDPipe,
   UploadedFile,
-  NotFoundException,
+  UseInterceptors,
   UploadedFiles,
+  BadRequestException,
+  NotFoundException,
+  ParseUUIDPipe,
 } from '@nestjs/common';
+import * as path from 'path';
+import * as fs from 'fs/promises';
 import { NatureSpotService } from './nature-spot.service';
 import { NatureSpotDto } from './dto/nature-spot.dto';
 import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
@@ -88,13 +90,42 @@ export class NatureSpotController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    console.log('Uploading file:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      path: file.path,
+      destination: file.destination,
+      filename: file.filename,
+    });
+
     if (!file) throw new BadRequestException('No se envio un archivo');
 
     const natureSpot = await this.natureSpotService.getNatureSpotById(id);
     if (!natureSpot) throw new NotFoundException('Paseo turistico no encontrado');
 
-    const updatedNatureSpot = await this.natureSpotService.updateImage(natureSpot, file.path);
-    return { data: updatedNatureSpot };
+    // Construct the full path to the uploaded file
+    const filePath = path.join(process.cwd(), file.path);
+    console.log('Calling updateImage with path:', filePath);
+
+    try {
+      const updatedNatureSpot = await this.natureSpotService.updateImage(natureSpot, filePath);
+
+      console.log('Successfully updated nature spot image:', {
+        id: updatedNatureSpot.id,
+        image: updatedNatureSpot.image,
+      });
+
+      return { data: updatedNatureSpot };
+    } catch (error) {
+      // Clean up the uploaded file if there was an error
+      try {
+        await fs.unlink(filePath);
+      } catch (cleanupError) {
+        console.error('Error cleaning up file after error:', cleanupError);
+      }
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard)

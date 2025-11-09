@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "organize:establishments": "bash -c 'mkdir -p upload/establishment/logos && find public/establishments -type f -exec cp -n {} upload/establishment/ \\; && find upload/establishment -type f \\( -iname \"*.jpg\" -o -iname \"*.jpeg\" -o -iname \"*.png\" -o -iname \"*.svg\" \\) -exec mv -n {} upload/establishment/logos/ \\; && echo \"Files have been reorganized successfully!\"'",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",

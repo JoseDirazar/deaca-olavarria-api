@@ -17,25 +17,43 @@ export class UploadService {
       const dirname = path.dirname(filePath);
       const basename = path.basename(filePath, extname);
 
-      const normalizedFilename = `${basename}.webp`;
-      const normalizedPath = path.join(dirname, normalizedFilename);
+      // Create a temporary file path for the output
+      const tempDir = path.join(process.cwd(), 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      const tempOutputPath = path.join(tempDir, `${Date.now()}-${basename}.webp`);
 
-      const sharpInstance = sharp(filePath);
+      let sharpInstance = sharp(filePath);
 
       if (options?.width || options?.height) {
-        sharpInstance.resize({
+        sharpInstance = sharpInstance.resize({
           width: options?.width,
           height: options?.height,
           fit: 'cover',
         });
       }
 
-      await sharpInstance.toFormat('webp', { quality: 80 }).toFile(normalizedPath);
+      // Process and save to temp file
+      await sharpInstance.toFormat('webp', { quality: 80 }).toFile(tempOutputPath);
 
-      // Eliminar el archivo original
+      // Delete original file
       await unlinkAsync(filePath);
 
-      return normalizedFilename;
+      // Move the processed file to the original directory
+      const finalFilename = `${basename}.webp`;
+      const finalPath = path.join(dirname, finalFilename);
+      
+      // Ensure the target directory exists
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+      }
+      
+      // Move the file
+      fs.renameSync(tempOutputPath, finalPath);
+
+      return finalFilename;
     } catch (error) {
       console.error('Error normalizing image:', error);
       throw new InternalServerErrorException('Error procesando la imagen');
