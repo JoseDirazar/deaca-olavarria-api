@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AppReviewService } from './app-review.service';
@@ -18,6 +19,7 @@ import { RolesAllowed } from '@modules/iam/auth/dto/roles.decorator';
 import { Roles } from 'src/infrastructure/types/enums/Roles';
 import { RolesGuard } from '@modules/iam/auth/guards/roles.guard';
 import { ChangeAppReviewStatusDto } from './dto/change-app-review-status.dto';
+import { Request } from 'express';
 
 @Controller('app-review')
 export class AppReviewController {
@@ -30,7 +32,10 @@ export class AppReviewController {
   }
 
   @Get('user')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   async getReviewForUser(@GetUser('id') userId: string) {
+    console.log(userId);
     const review = await this.appReviewService.findOneByUserId(userId);
     return { data: review };
   }
@@ -39,11 +44,12 @@ export class AppReviewController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUSINESS_OWNER, Roles.ADMIN)
   async createAppReview(@GetUser('id') userId: string, @Body() appReview: AppReviewDto) {
+    console.log(userId);
     const existingReview = await this.appReviewService.findOneByUserId(userId);
     if (existingReview) throw new BadRequestException('Ya tienes un comentario realizado');
     return {
       data: this.appReviewService.createAppReview(userId, appReview),
-      message: 'Comentario creado exitosamente',
+      message: 'Gracias por tu calificación. Una vez aprobada se mostrara en la pagina principal',
     };
   }
 

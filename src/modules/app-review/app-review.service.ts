@@ -31,6 +31,7 @@ export class AppReviewService {
   }
 
   async findOneByUserId(userId: string) {
+    if (!userId) throw new Error('No se proporciono un id de usuario');
     return this.appReviewRepository.findOne({
       where: { user: { id: userId } },
       relations: ['user'],
